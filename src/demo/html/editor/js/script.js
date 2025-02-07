@@ -59,15 +59,6 @@ var app = new Vue({
         initEquation() {
             this.mathField = new MathfieldElement();
 
-            if (!this.mathField.inlineShortcuts) {
-                this.mathField.inlineShortcuts = {}
-            }
-
-            this.mathField.inlineShortcuts = {
-                ...this.mathField.inlineShortcuts,
-                '/': '\\dfrac{#?}{#?}',
-            }
-
             this.mathField.addEventListener('input', (ev) => {
                 this.latex = this.mathField.getValue();
                 this.sendLatex();
@@ -84,6 +75,11 @@ var app = new Vue({
             }
 
             document.getElementById('math-field').appendChild(this.mathField);
+
+            this.mathField.inlineShortcuts = {
+                ...this.mathField.inlineShortcuts,
+                '/': '\\dfrac{#?}{#?}',
+            }
         },
 
         insert(button) {
