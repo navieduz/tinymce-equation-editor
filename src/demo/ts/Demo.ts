@@ -1,13 +1,14 @@
 import Plugin from '../../main/ts/Plugin';
+import { bindContentPrinter } from './DemoContentPrinter';
 
 declare let tinymce: any;
 
 Plugin();
 
-init('textarea.tinymce', false);
-init('div.inline', true);
+init('textarea.tinymce', false, 'textarea-content-button', 'textarea-content-output');
+init('div.inline', true, 'inline-content-button', 'inline-content-output');
 
-function init(selector, inline: boolean) {
+function init(selector, inline: boolean, buttonId: string, outputId: string) {
     tinymce.init({
         selector,
         inline,
@@ -27,6 +28,12 @@ function init(selector, inline: boolean) {
                 smartMode: true,
             },
         },
-
+        setup: (editor) => {
+            editor.on('init', () => {
+                const button = document.getElementById(buttonId) as HTMLButtonElement;
+                const output = document.getElementById(outputId) as HTMLTextAreaElement;
+                bindContentPrinter(editor, button, output);
+            });
+        },
     });
 }
