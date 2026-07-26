@@ -20,7 +20,9 @@ function init(selector, inline: boolean) {
             'https://unpkg.com/mathlive@0.96.2/dist/mathlive-fonts.css'
         ],
         equation_editor_group: 'advanced',
+        equation_editor_storage_format: 'latex-html',
         equation_editor_config: {
+            render_latex: (latex) => (window as any).MathLive.convertLatexToMarkup(latex),
             mathlive_config: {
                 smartMode: true,
             },

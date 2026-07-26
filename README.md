@@ -97,6 +97,33 @@ equation_editor_button_bar: [
 ];
 ```
 
+### Compact LaTeX storage
+
+The default storage format keeps MathLive's rendered markup. To store a compact
+LaTeX-only HTML record, opt in with `equation_editor_storage_format: 'latex-html'`.
+The host page must load MathLive **before** its compiled demo/plugin script, then
+provide the renderer used to hydrate compact records in TinyMCE:
+
+```ts
+tinymce.init({
+    // Other TinyMCE options...
+    equation_editor_storage_format: 'latex-html',
+    equation_editor_config: {
+        render_latex: (latex) => (window as any).MathLive.convertLatexToMarkup(latex),
+    },
+});
+```
+
+For example, saving `y^x` stores exactly:
+
+```html
+<span class="equation-latex" data-latex="y^x"></span>
+```
+
+An existing `.mq-math-mode[data-latex]` record is compacted on its next successful
+save. Consumers that render saved content outside TinyMCE must render
+`.equation-latex[data-latex]` themselves.
+
 
 ## Development
 
