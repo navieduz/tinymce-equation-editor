@@ -1,4 +1,9 @@
 import ButtonsTransformer, { ButtonConfig } from './ButtonsTransformer';
+import {
+    LatexRenderer,
+    toRuntimeEquationContent,
+    toStoredEquationContent,
+} from './EquationContentTransformer';
 
 declare const tinymce: any;
 declare const document: any;
@@ -21,6 +26,7 @@ interface EditorSettings {
     btn_cancel_text: string;
     btn_ok_text: string;
     mathlive_config?: object;
+    render_latex?: LatexRenderer;
     width?: number;
     height?: number;
 }
@@ -29,6 +35,10 @@ const setup = (editor, url) => {
     if (editor.editorManager.majorVersion === '6') {
         editor.options.register('equation_editor_config', {
             processor: 'object',
+        });
+        editor.options.register('equation_editor_storage_format', {
+            processor: 'string',
+            default: 'mathlive-html',
         });
         editor.options.register('equation_editor_group', {
             processor: 'string',
@@ -42,6 +52,15 @@ const setup = (editor, url) => {
         });
     }
     const editorSettings: EditorSettings = getEditorSettings(editor);
+    const storageFormat = getStorageFormat(editor);
+    if (
+        storageFormat === 'latex-html' &&
+        typeof editorSettings.render_latex === 'undefined'
+    ) {
+        throw new Error(
+            "'render_latex' property is required when equation_editor_storage_format is 'latex-html'"
+        );
+    }
     // Editor global params
     let groups = getSettings(editor, 'equation_editor_button_groups');
     let btnBar = getSettings(editor, 'equation_editor_button_bar');
@@ -671,6 +690,25 @@ const setup = (editor, url) => {
     }
 
     // ----- Events ----- //
+    editor.on('BeforeSetContent', (event) => {
+        if (storageFormat === 'latex-html') {
+            event.content = toRuntimeEquationContent(
+                event.content,
+                editorSettings.render_latex as LatexRenderer
+            );
+        }
+    });
+
+    editor.on('GetContent', (event) => {
+        if (storageFormat === 'latex-html') {
+            event.content = toStoredEquationContent(event.content);
+        }
+    });
+
+    editor.on('SetContent', () => {
+        setOnClickEquationContent(editor);
+    });
+
     editor.on('init', () => {
         setTimeout(() => {
             setOnClickEquationContent(editor);
@@ -761,6 +799,20 @@ function getSettings(editor, key) {
     return editor.settings[key];
 }
 
+function getStorageFormat(editor): 'mathlive-html' | 'latex-html' {
+    const storageFormat = getSettings(editor, 'equation_editor_storage_format');
+
+    if (typeof storageFormat === 'undefined') {
+        return 'mathlive-html';
+    }
+    if (storageFormat === 'mathlive-html' || storageFormat === 'latex-html') {
+        return storageFormat;
+    }
+    throw new Error(
+        "'equation_editor_storage_format' must be 'mathlive-html' or 'latex-html'"
+    );
+}
+
 function getEditorSettings(editor): EditorSettings {
     // equation_editor_config
     let editorSettings = getSettings(editor, 'equation_editor_config');
@@ -828,6 +880,15 @@ function getEditorSettings(editor): EditorSettings {
     if (typeof editorSettings.mathlive_config !== 'object' && typeof editorSettings.mathlive_config !== 'undefined') {
         throw new Error(
             "'mathlive_config' property must be a object with config of mathlive, see http://docs.mathlive.io/tutorial-CONFIG.html"
+        );
+    }
+
+    if (
+        typeof editorSettings.render_latex !== 'undefined' &&
+        typeof editorSettings.render_latex !== 'function'
+    ) {
+        throw new Error(
+            "'render_latex' property must be a function in equation_editor_config"
         );
     }
 
