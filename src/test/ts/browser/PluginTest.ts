@@ -4,68 +4,68 @@ import { UnitTest } from '@ephox/bedrock';
 import { expect } from 'chai';
 import Plugin from '../../../main/ts/Plugin';
 
+Plugin();
+
+UnitTest.asynctest('browser.CompactStoragePluginTest', (success, failure) => {
+    TinyLoader.setup(
+        (editor, onSuccess, onFailure) => {
+            Pipeline.async(
+                {},
+                [
+                    Logger.t(
+                        'hydrate compact equations and save compact content',
+                        GeneralSteps.sequence([
+                            Step.sync(() => {
+                                editor.setContent(
+                                    '<p><span class="equation-latex" data-latex="y^x"></span></p>'
+                                );
+                            }),
+                            Step.sync(() => {
+                                expect(
+                                    editor.getBody().querySelector('.mq-math-mode')
+                                ).not.to.equal(null);
+                                expect(editor.getContent()).to.equal(
+                                    '<p><span class="equation-latex" data-latex="y^x"></span></p>'
+                                );
+                            }),
+                        ])
+                    ),
+                    Logger.t(
+                        'lazily migrate rendered equations when saving',
+                        GeneralSteps.sequence([
+                            Step.sync(() => {
+                                editor.setContent(
+                                    '<p><span class="mq-math-mode" data-latex="y^x"><var>y</var></span></p>'
+                                );
+                            }),
+                            Step.sync(() => {
+                                expect(editor.getContent()).to.equal(
+                                    '<p><span class="equation-latex" data-latex="y^x"></span></p>'
+                                );
+                            }),
+                        ])
+                    ),
+                ],
+                onSuccess,
+                onFailure
+            );
+        },
+        {
+            plugins: 'equation-editor',
+            toolbar: 'equation-editor',
+            equation_editor_storage_format: 'latex-html',
+            equation_editor_config: {
+                render_latex: (latex) =>
+                    '<span class="fixture-render">' + latex + '</span>',
+            },
+        },
+        success,
+        failure
+    );
+});
+
 // This an example of a browser test of the editor.
 UnitTest.asynctest('browser.PluginTest', (success, failure) => {
-    Plugin();
-
-    const runCompactStorageTests = () => {
-        TinyLoader.setup(
-            (editor, onSuccess, onFailure) => {
-                Pipeline.async(
-                    {},
-                    [
-                        Logger.t(
-                            'hydrate compact equations and save compact content',
-                            GeneralSteps.sequence([
-                                Step.sync(() => {
-                                    editor.setContent(
-                                        '<p><span class="equation-latex" data-latex="y^x"></span></p>'
-                                    );
-                                }),
-                                Step.sync(() => {
-                                    expect(
-                                        editor.getBody().querySelector('.mq-math-mode')
-                                    ).not.to.equal(null);
-                                    expect(editor.getContent()).to.equal(
-                                        '<p><span class="equation-latex" data-latex="y^x"></span></p>'
-                                    );
-                                }),
-                            ])
-                        ),
-                        Logger.t(
-                            'lazily migrate rendered equations when saving',
-                            GeneralSteps.sequence([
-                                Step.sync(() => {
-                                    editor.setContent(
-                                        '<p><span class="mq-math-mode" data-latex="y^x"><var>y</var></span></p>'
-                                    );
-                                }),
-                                Step.sync(() => {
-                                    expect(editor.getContent()).to.equal(
-                                        '<p><span class="equation-latex" data-latex="y^x"></span></p>'
-                                    );
-                                }),
-                            ])
-                        ),
-                    ],
-                    onSuccess,
-                    onFailure
-                );
-            },
-            {
-                plugins: 'equation-editor',
-                toolbar: 'equation-editor',
-                equation_editor_storage_format: 'latex-html',
-                equation_editor_config: {
-                    render_latex: (latex) =>
-                        '<span class="fixture-render">' + latex + '</span>',
-                },
-            },
-            success,
-            failure
-        );
-    };
-
     TinyLoader.setup(
         (editor, onSuccess, onFailure) => {
             const tinyApis = TinyApis(editor);
@@ -95,7 +95,7 @@ UnitTest.asynctest('browser.PluginTest', (success, failure) => {
             plugins: 'equation-editor',
             toolbar: 'equation-editor',
         },
-        runCompactStorageTests,
+        success,
         failure
     );
 });
