@@ -1,0 +1,96 @@
+# Compact LaTeX storage for equations
+
+## Decision
+
+Use a compact semantic HTML token as the persisted representation of every
+equation. The token contains the original LaTeX but no MathLive render tree.
+Keep the MathLive markup only in the TinyMCE document at runtime.
+
+This is a lazy migration: old rows are accepted unchanged and become compact
+only when a user opens and saves them. No database batch job is part of this
+change.
+
+## Persisted contract
+
+Newly saved content represents an equation as:
+
+```html
+<span class="equation-latex" data-latex="\\frac{a}{b}"></span>
+```
+
+`data-latex` is the canonical value. `equation-latex` distinguishes a stored
+token from the runtime `.mq-math-mode` element. The surrounding rich HTML
+(paragraphs, tables, images, links and text) is retained unchanged.
+
+The output has no MathLive child markup, and therefore must not rely on a
+specific MathLive rendering version.
+
+## Runtime flow
+
+### Load into TinyMCE
+
+Before supplied content is set into the editor, replace each
+`span.equation-latex[data-latex]` with:
+
+```html
+<span class="mq-math-mode" data-latex="...">{MathLive markup}</span>
+```
+
+The child markup is generated with `MathLive.convertLatexToMarkup(latex)`.
+The existing click handler then opens the equation window using `data-latex`.
+
+Old persisted `.mq-math-mode[data-latex]` elements are accepted as already
+hydrated content, so existing rows remain editable.
+
+### Save from TinyMCE
+
+When TinyMCE serializes content for its caller, replace every runtime
+`.mq-math-mode[data-latex]` with the compact `equation-latex` token. This must
+operate on a cloned/parsed serialization result, never by removing markup from
+the live editing DOM.
+
+As a result, saving an old record performs its lazy migration automatically.
+
+## Compatibility and API
+
+Add an editor option with two values:
+
+- `equation_editor_storage_format: 'mathlive-html'` keeps the current output.
+- `equation_editor_storage_format: 'latex-html'` enables this design.
+
+Release it initially as opt-in to protect integrations that render stored
+MathLive markup directly. The consuming application should set `latex-html`.
+Changing the library default is a separate, major-version decision.
+
+## Safety and error handling
+
+- Build and serialize equation elements through DOM/TinyMCE APIs; do not
+  interpolate unescaped LaTeX into an HTML string.
+- Preserve all LaTeX bytes, including valid `\\` line breaks in matrices and
+  `cases`; no global backslash normalization is allowed.
+- A runtime equation without a non-empty `data-latex` cannot be compacted. It
+  remains unchanged and emits a console warning so content is never discarded.
+- A compact token whose LaTeX fails to render remains identifiable by
+  `data-latex`; show its escaped LaTeX fallback rather than lose it.
+
+## Verification
+
+Browser tests must prove:
+
+1. A new equation is visually rendered in TinyMCE and `getContent()` in
+   `latex-html` mode contains only the compact token.
+2. Compact stored content becomes clickable rendered MathLive content after
+   `setContent()`.
+3. Existing rendered markup loads and, after save, becomes compact (lazy
+   migration).
+4. Text and non-equation HTML are byte-for-byte unchanged by conversion.
+5. Quotes, ampersands, a matrix, and a multi-line `cases` formula preserve
+   their exact `data-latex` value across load-save-load.
+6. `mathlive-html` mode remains covered by the existing output assertion.
+
+## Out of scope
+
+- A bulk database migration.
+- Rendering compact tokens in pages outside TinyMCE.
+- Converting the full rich-text document into delimiter-based LaTeX or
+  Markdown.
