@@ -700,7 +700,7 @@ const setup = (editor, url) => {
     });
 
     editor.on('GetContent', (event) => {
-        if (storageFormat === 'latex-html') {
+        if (storageFormat === 'latex-html' && event.format === 'html') {
             event.content = toStoredEquationContent(event.content);
         }
     });

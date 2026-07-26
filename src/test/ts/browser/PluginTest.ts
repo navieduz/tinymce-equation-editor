@@ -27,6 +27,32 @@ UnitTest.asynctest('browser.CompactStoragePluginTest', (success, failure) => {
                                 expect(editor.getContent()).to.equal(
                                     '<p><span class="equation-latex" data-latex="y^x"></span></p>'
                                 );
+                                expect(
+                                    editor.getBody().querySelector('.mq-math-mode')
+                                ).not.to.equal(null);
+                                expect(
+                                    editor.getBody().querySelector('.equation-latex')
+                                ).to.equal(null);
+                            }),
+                        ])
+                    ),
+                    Logger.t(
+                        'preserve non-html GetContent output formats',
+                        GeneralSteps.sequence([
+                            Step.sync(() => {
+                                editor.setContent(
+                                    '<p>&lt;span class="mq-math-mode" data-latex="literal"&gt;literal&lt;/span&gt;</p>'
+                                );
+                            }),
+                            Step.sync(() => {
+                                expect(
+                                    editor.getContent({ format: 'text' })
+                                ).to.equal(
+                                    '<span class="mq-math-mode" data-latex="literal">literal</span>'
+                                );
+                                expect(
+                                    editor.getContent({ format: 'tree' } as any)
+                                ).to.be.an('object');
                             }),
                         ])
                     ),
