@@ -1,278 +1,117 @@
 # Compact LaTeX Storage Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Status:** Implemented on 2026-07-27. This document records the final
+> schema and verification contract for follow-up work.
 
-**Goal:** Allow TinyMCE content to persist equations as compact LaTeX tokens and lazily migrate old MathLive markup when edited and saved.
+**Goal:** Persist equations as compact LaTeX nodes while rendering MathLive
+markup only inside TinyMCE.
 
-**Architecture:** Keep MathLive markup as a runtime-only representation in TinyMCE. A focused transformer converts between runtime `.mq-math-mode[data-latex]` elements and persisted `.equation-latex[data-latex]` tokens. The plugin calls that transformer in TinyMCE content lifecycle events when `equation_editor_storage_format` is `latex-html`; a required host callback supplies the MathLive renderer for hydration.
+**Architecture:** `EquationContentTransformer` converts between runtime
+`.mq-math-mode` spans and stored semantic math spans. `Plugin.ts` hydrates
+stored content before TinyMCE loads it and compacts only HTML serialization in
+`latex-html` mode. The editor dialog carries display mode from an existing
+runtime node through reinsertion.
 
-**Tech Stack:** TypeScript 3.1, TinyMCE 5/6 plugin APIs, browser DOM APIs, MathLive 0.96.2 renderer supplied by the host, Bedrock/Agar/McAgar browser tests, TSLint, Grunt.
+**Tech Stack:** TypeScript 3.9, Yarn 4.15, TinyMCE 5/6 plugin APIs, browser DOM
+APIs, host-supplied MathLive renderer, Bedrock/Agar/McAgar browser tests,
+TSLint, and Grunt.
 
 ## Global Constraints
 
-- Persisted equation token: `<span class="equation-latex" data-latex="..."></span>`.
-- Runtime equation token: `<span class="mq-math-mode" data-latex="...">{renderer output}</span>` with `contenteditable="false"`.
-- `data-latex` is the only canonical equation value; never infer LaTeX from MathLive markup.
-- Preserve LaTeX byte-for-byte, including valid `\\` line breaks; do not normalize backslashes.
-- Never mutate the live editor DOM while serializing content for storage.
-- `mathlive-html` remains the default and preserves today’s output; `latex-html` is opt-in.
-- `latex-html` requires `equation_editor_config.render_latex(latex)` and must fail setup with a descriptive error if absent.
-- Do not touch the existing user change in `.vscode/settings.json`.
+- Persisted equation token:
+  `<span data-math="latex" data-display="inline|block" data-latex="..."></span>`.
+- Runtime equation token:
+  `<span class="mq-math-mode" data-latex="..." data-display="inline|block">{renderer output}</span>`
+  with `contenteditable="false"`.
+- `data-latex` is canonical. Never infer LaTeX from MathLive child markup.
+- Normalize absent or invalid display values to `inline`.
+- Do not read or write `.equation-latex[data-latex]`; backward compatibility is
+  intentionally out of scope.
+- Preserve LaTeX bytes and do not mutate TinyMCE's live DOM during output
+  serialization.
+- `latex-html` is opt-in and requires `render_latex`; `mathlive-html` remains
+  the default.
 
 ---
 
 ## File structure
 
-- Create `src/main/ts/EquationContentTransformer.ts`: pure browser-DOM conversions between compact and runtime equation elements.
-- Modify `src/main/ts/Plugin.ts`: expose the storage option, validate the renderer hook, and bind TinyMCE load/save lifecycle events.
-- Create `src/test/ts/browser/EquationContentTransformerTest.ts`: direct conversion regression tests, including special LaTeX characters and multiline formulas.
-- Modify `src/test/ts/browser/PluginTest.ts`: browser integration tests for compact load/save, lazy migration, and legacy output mode.
-- Modify `src/demo/ts/Demo.ts`, `src/demo/html/index.html`, and `src/demo/html/v6.html`: demonstrate `latex-html` with MathLive loaded in the TinyMCE parent page.
-- Modify `README.md`: document persisted format, hook setup, compatibility, and lazy migration behavior.
+- `src/main/ts/EquationContentTransformer.ts`: DOM conversion and display-mode
+  normalization.
+- `src/main/ts/Plugin.ts`: TinyMCE lifecycle integration and dialog display
+  propagation.
+- `src/test/ts/browser/EquationContentTransformerTest.ts`: compact schema,
+  fallback, special LaTeX, and block round-trip coverage.
+- `src/test/ts/browser/EquationDialogTest.ts`: regression coverage for editing
+  a second formula and preserving block mode.
+- `src/test/ts/browser/PluginTest.ts`: compact-storage integration and runtime
+  default-display assertions.
+- `src/demo/ts/Demo.ts`: permits persisted math data attributes in TinyMCE.
+- `README.md`: public schema and host-renderer contract.
 
-### Task 1: Implement and test the content transformer
+## Completed Tasks
 
-**Files:**
-- Create: `src/main/ts/EquationContentTransformer.ts`
-- Create: `src/test/ts/browser/EquationContentTransformerTest.ts`
-
-**Interfaces:**
-- Produces `LatexRenderer = (latex: string) => string`.
-- Produces `toStoredEquationContent(content: string): string`.
-- Produces `toRuntimeEquationContent(content: string, renderLatex: LatexRenderer): string`.
-- Task 2 consumes all three exports.
-
-- [ ] **Step 1: Write failing transformer tests**
-
-Create `src/test/ts/browser/EquationContentTransformerTest.ts` using Bedrock `UnitTest` and Chai `expect`. Cover these exact cases:
-
-```ts
-expect(toStoredEquationContent(
-    '<p>A <span class="mq-math-mode" data-latex="y^x"><var>y</var></span> B</p>'
-)).to.equal(
-    '<p>A <span class="equation-latex" data-latex="y^x"></span> B</p>'
-);
-
-expect(toRuntimeEquationContent(
-    '<p><span class="equation-latex" data-latex="\\\\frac{a}{b}"></span></p>',
-    (latex) => '<span class="rendered">' + latex + '</span>'
-)).to.equal(
-    '<p><span class="mq-math-mode" data-latex="\\\\frac{a}{b}" contenteditable="false"><span class="rendered">\\\\frac{a}{b}</span></span></p>'
-);
-```
-
-Add a round-trip fixture containing `\\begin{cases}x &amp; y \\\\ z\\end{cases}` and an unrelated `<a href="/lesson">link</a>`; assert the `data-latex` value and link survive runtime-to-stored conversion unchanged. Add a test where a `.mq-math-mode` span has no `data-latex` and assert it is unchanged.
-
-- [ ] **Step 2: Run the new test to verify it fails**
-
-Run:
-
-```bash
-npm test
-```
-
-Expected: test compilation fails because `EquationContentTransformer` does not exist.
-
-- [ ] **Step 3: Implement the smallest DOM transformer**
-
-Create `src/main/ts/EquationContentTransformer.ts` with this public shape:
-
-```ts
-export type LatexRenderer = (latex: string) => string;
-
-export const toStoredEquationContent = (content: string): string => { /* ... */ };
-export const toRuntimeEquationContent = (
-    content: string,
-    renderLatex: LatexRenderer
-): string => { /* ... */ };
-```
-
-Use `document.implementation.createHTMLDocument('equation-content')`, assign only the supplied HTML to `document.body.innerHTML`, then query inside that detached body. In `toStoredEquationContent`, replace each `span.mq-math-mode[data-latex]` having a non-empty `dataset.latex` with a newly created `span` whose `className` is `equation-latex` and whose `dataset.latex` is copied from the source. Do not copy child nodes. For a missing/empty value, retain the original node and call `console.warn('Unable to compact equation without data-latex')`.
-
-In `toRuntimeEquationContent`, replace each `span.equation-latex[data-latex]` with a newly created `.mq-math-mode` span, copy `dataset.latex`, set `contentEditable = 'false'`, then assign renderer output to `innerHTML`. If the renderer throws, retain the same runtime span but set `textContent` to its LaTeX and call `console.warn('Unable to render equation LaTeX', error)`; this keeps it visible, clickable, and recoverable. Return the detached body’s `innerHTML` in both functions.
-
-- [ ] **Step 4: Run the transformer tests to verify they pass**
-
-Run:
-
-```bash
-npm test
-```
-
-Expected: all existing browser tests and `EquationContentTransformerTest` pass.
-
-- [ ] **Step 5: Commit the isolated transformer**
-
-```bash
-git add src/main/ts/EquationContentTransformer.ts src/test/ts/browser/EquationContentTransformerTest.ts
-git commit -m "feat: add compact equation content transformer"
-```
-
-### Task 2: Wire compact storage into TinyMCE and test lazy migration
+### Task 1: Replace the persisted token schema
 
 **Files:**
-- Modify: `src/main/ts/Plugin.ts:11-26, 28-751, 764-835, 884-903`
-- Modify: `src/test/ts/browser/PluginTest.ts:1-43`
+- Modified: `src/main/ts/EquationContentTransformer.ts`
+- Modified: `src/test/ts/browser/EquationContentTransformerTest.ts`
 
-**Interfaces:**
-- Consumes `LatexRenderer`, `toStoredEquationContent`, and `toRuntimeEquationContent` from Task 1.
-- Adds top-level TinyMCE option `equation_editor_storage_format: 'mathlive-html' | 'latex-html'`.
-- Adds `equation_editor_config.render_latex?: LatexRenderer`.
-- Produces compact save/load behavior only when the option is `latex-html`.
+- [x] Replace runtime equations with a freshly created stored `span` carrying
+  `data-math="latex"`, canonical `data-latex`, and normalized `data-display`.
+- [x] Hydrate only `span[data-math="latex"][data-latex]`; copy display mode to
+  the `.mq-math-mode` runtime span.
+- [x] Default missing display mode to `inline` and preserve `block` through a
+  stored → runtime → stored round trip.
+- [x] Retain malformed runtime nodes without `data-latex` and preserve renderer
+  fallback behavior.
 
-- [ ] **Step 1: Write failing TinyMCE integration tests**
-
-Extend `PluginTest.ts` with a second `TinyLoader.setup` configured as follows:
-
-```ts
-equation_editor_storage_format: 'latex-html',
-equation_editor_config: {
-    render_latex: (latex) => '<span class="fixture-render">' + latex + '</span>',
-},
-```
-
-Inside its test sequence, call `editor.setContent('<p><span class="equation-latex" data-latex="y^x"></span></p>')`, then assert:
-
-```ts
-expect(editor.getBody().querySelector('.mq-math-mode')).not.to.equal(null);
-expect(editor.getContent()).to.equal(
-    '<p><span class="equation-latex" data-latex="y^x"></span></p>'
-);
-```
-
-Add a second assertion that setting the old rendered form
-`<span class="mq-math-mode" data-latex="y^x"><var>y</var></span>` produces the compact token on `editor.getContent()`; this is the lazy-migration regression. Retain the existing loader without the new option and assert it still returns the legacy rendered span after `equation-insert`.
-
-- [ ] **Step 2: Run the browser suite to verify it fails**
-
-Run:
-
-```bash
-npm test
-```
-
-Expected: compact-token assertions fail because no lifecycle conversion is registered.
-
-- [ ] **Step 3: Add configuration validation and lifecycle hooks**
-
-In `Plugin.ts`:
-
-1. Import the three Task 1 exports.
-2. Extend `EditorSettings` with `render_latex?: LatexRenderer`.
-3. On TinyMCE 6, register `equation_editor_storage_format` with `processor: 'string'` and `default: 'mathlive-html'` next to the existing option registration.
-4. Add `getStorageFormat(editor): 'mathlive-html' | 'latex-html'`, reading `getSettings(editor, 'equation_editor_storage_format')`, defaulting to `mathlive-html`, and throwing `"'equation_editor_storage_format' must be 'mathlive-html' or 'latex-html'"` for any other value.
-5. In `getEditorSettings()`, accept `render_latex` only when it is `undefined` or a function; otherwise throw `"'render_latex' property must be a function in equation_editor_config"`.
-6. Immediately after reading settings in `setup()`, throw `"'render_latex' property is required when equation_editor_storage_format is 'latex-html'"` if compact mode has no renderer.
-7. Register these handlers before commands are added:
-
-```ts
-editor.on('BeforeSetContent', (event) => {
-    if (storageFormat === 'latex-html') {
-        event.content = toRuntimeEquationContent(event.content, editorSettings.render_latex as LatexRenderer);
-    }
-});
-
-editor.on('GetContent', (event) => {
-    if (storageFormat === 'latex-html') {
-        event.content = toStoredEquationContent(event.content);
-    }
-});
-
-editor.on('SetContent', () => {
-    setOnClickEquationContent(editor);
-});
-```
-
-The `GetContent` transformer must modify only the event serialization string; it must not inspect or replace nodes in `editor.getBody()`.
-
-- [ ] **Step 4: Run integration tests and static checks**
-
-Run:
-
-```bash
-npm test && npm run lint && npm run build
-```
-
-Expected: all three commands exit 0. The existing test proves default output is unchanged; new tests prove compact hydration and lazy migration.
-
-- [ ] **Step 5: Commit plugin integration**
-
-```bash
-git add src/main/ts/Plugin.ts src/test/ts/browser/PluginTest.ts
-git commit -m "feat: support compact latex equation storage"
-```
-
-### Task 3: Make the demo and public configuration contract usable
+### Task 2: Preserve display mode in editor commands
 
 **Files:**
-- Modify: `src/demo/html/index.html:8-10`
-- Modify: `src/demo/html/v6.html:8-10`
-- Modify: `src/demo/ts/Demo.ts:10-30`
-- Modify: `README.md`
+- Modified: `src/main/ts/Plugin.ts`
+- Modified: `src/test/ts/browser/EquationDialogTest.ts`
+- Modified: `src/test/ts/browser/PluginTest.ts`
 
-**Interfaces:**
-- Consumes `equation_editor_storage_format: 'latex-html'` and `equation_editor_config.render_latex` from Task 2.
-- Produces a demo that loads MathLive in the parent TinyMCE page and documents the application integration contract.
+- [x] Insert new runtime equations with `data-display="inline"` by default.
+- [x] Pass `data-display` from a clicked runtime node to `equation-window` and
+  from dialog action to `equation-insert`.
+- [x] Verify that opening formula A, then opening block formula B and pressing
+  Insert without edits keeps B's LaTeX, rendered HTML, and `block` display.
+- [x] Restrict compact serialization to TinyMCE HTML output so text and tree
+  output formats remain untouched.
 
-- [ ] **Step 1: Document the expected demo behavior before changing it**
+### Task 3: Align the demo and public contract
 
-Add to `README.md` an acceptance example showing that the host must load MathLive before its compiled demo/plugin script, configure:
+**Files:**
+- Modified: `src/demo/ts/Demo.ts`
+- Modified: `src/test/ts/browser/DemoContentPrinterTest.ts`
+- Modified: `README.md`
+- Modified: `dist/equation-editor/plugin.js`
+- Modified: `dist/equation-editor/plugin.min.js`
 
-```ts
-equation_editor_storage_format: 'latex-html',
-equation_editor_config: {
-    render_latex: (latex) => (window as any).MathLive.convertLatexToMarkup(latex),
-}
-```
+- [x] Allow `data-math`, `data-display`, and `data-latex` in the demo's
+  TinyMCE configuration.
+- [x] Document the exact persisted inline schema, block value, host rendering
+  responsibility, and lack of legacy-schema support.
+- [x] Rebuild the distributable plugin bundle.
 
-State the exact stored output and that an old `.mq-math-mode[data-latex]` record is compacted on its next successful save. State that consumers rendering content outside TinyMCE must render `.equation-latex[data-latex]` themselves.
+## Verification Record
 
-- [ ] **Step 2: Build the demo to establish the current failure**
+- [x] `EquationContentTransformerTest.ts` passes for inline hydration,
+  fallback rendering, special LaTeX, and block round-trip.
+- [x] `EquationDialogTest.ts` passes for cross-dialog HTML isolation and block
+  display preservation.
+- [x] `DemoContentPrinterTest.ts` passes with the new persisted node.
+- [x] `npm run lint`, `tsc --noEmit`, and `npm run build` pass.
+- [x] The legacy `browser.PluginTest` equation-insert assertion remains a
+  Chrome 150 baseline failure; compact-storage assertions run before it and
+  pass.
 
-Run:
+## Follow-up Boundaries
 
-```bash
-npm run build
-```
-
-Expected: exit 0 before the change; this establishes the baseline build command. Manual check: the current parent demo page has no MathLive script and therefore cannot provide `render_latex`.
-
-- [ ] **Step 3: Configure the parent-page MathLive renderer in the demo**
-
-Add the MathLive 0.96.2 script before `scratch/compiled/demo.js` in both `src/demo/html/index.html` and `src/demo/html/v6.html`:
-
-```html
-<script src="https://unpkg.com/mathlive@0.96.2/dist/mathlive.min.js"></script>
-```
-
-In `Demo.ts`, configure the plugin with `equation_editor_storage_format: 'latex-html'` and:
-
-```ts
-render_latex: (latex) => (window as any).MathLive.convertLatexToMarkup(latex),
-```
-
-Keep existing `mathlive_config` intact. Do not add MathLive as an npm dependency: this release keeps the existing CDN/version model and explicitly requires the host-provided renderer.
-
-- [ ] **Step 4: Verify build, tests, and the manual round trip**
-
-Run:
-
-```bash
-npm test && npm run lint && npm run build
-```
-
-Expected: all commands exit 0. Then run `npm start`, open `src/demo/html/index.html`, insert `y^x`, retrieve editor content from the browser console, and verify it is a compact `equation-latex` span. Reload that value into the editor and verify it is visibly rendered and opens the equation dialog on click.
-
-- [ ] **Step 5: Commit documentation and demo integration**
-
-```bash
-git add README.md src/demo/ts/Demo.ts src/demo/html/index.html src/demo/html/v6.html
-git commit -m "docs: explain compact latex equation storage"
-```
-
-## Final verification and delivery
-
-- [ ] Confirm `git status --short` contains no changes from these tasks and preserves any pre-existing `.vscode/settings.json` change.
-- [ ] Run `npm test && npm run lint && npm run build` once more after the final commit.
-- [ ] Verify the committed diff only contains the transformer, plugin, tests, demo, and README changes described above.
-- [ ] In the release notes, mark `latex-html` as opt-in and list the host requirement to provide `render_latex`.
+- Add a block/inline selection UI only if product requirements introduce it.
+- Add `data-math-version` only for a future breaking persisted-schema change.
+- If data must be migrated outside local development, define a separate
+  explicit migration and compatibility policy rather than reintroducing the
+  legacy parser implicitly.
