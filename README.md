@@ -117,18 +117,13 @@ tinymce.init({
 For example, saving `y^x` stores exactly:
 
 ```html
-<span data-math="latex" data-display="inline" data-latex="y^x"></span>
+<p>\(y^x\)</p>
 ```
 
-An existing `.mq-math-mode[data-latex]` record is compacted on its next successful
-save. Consumers that render saved content outside TinyMCE must render
-`[data-math="latex"][data-latex]` themselves; `data-display` is either `inline`
-or `block`. The plugin only hydrates this schema; the former
-`.equation-latex[data-latex]` format is not supported.
-
-For a legacy rendered `<span class="mq-math-mode" data-latex="...">` record,
-the plugin discards its MathLive child markup and re-renders it from
-`data-latex` when loading. The next save writes the compact schema above.
+Use `\(...\)` for inline math and `\[...\]` for block math. Consumers that
+render saved content outside TinyMCE must parse these delimiters with their
+chosen LaTeX renderer. The plugin does not read prior `data-math` or
+`.mq-math-mode` storage formats.
 
 
 ## Development

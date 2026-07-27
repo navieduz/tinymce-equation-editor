@@ -17,7 +17,7 @@ UnitTest.asynctest('browser.CompactStoragePluginTest', (success, failure) => {
                         GeneralSteps.sequence([
                             Step.sync(() => {
                                 editor.setContent(
-                                    '<p><span data-math="latex" data-display="inline" data-latex="y^x"></span></p>'
+                                    '<p>\\(y^x\\)</p>'
                                 );
                             }),
                             Step.sync(() => {
@@ -25,7 +25,7 @@ UnitTest.asynctest('browser.CompactStoragePluginTest', (success, failure) => {
                                     editor.getBody().querySelector('.mq-math-mode')
                                 ).not.to.equal(null);
                                 expect(editor.getContent()).to.equal(
-                                    '<p><span data-math="latex" data-display="inline" data-latex="y^x"></span></p>'
+                                    '<p>\\(y^x\\)</p>'
                                 );
                                 expect(
                                     editor.getBody().querySelector('.mq-math-mode')
@@ -66,7 +66,7 @@ UnitTest.asynctest('browser.CompactStoragePluginTest', (success, failure) => {
                             }),
                             Step.sync(() => {
                                 expect(editor.getContent()).to.equal(
-                                    '<p><span data-math="latex" data-display="inline" data-latex="y^x"></span></p>'
+                                    '<p>\\(y^x\\)</p>'
                                 );
                             }),
                         ])

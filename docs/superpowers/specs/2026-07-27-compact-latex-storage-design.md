@@ -1,123 +1,87 @@
-# Compact LaTeX storage for equations
+# Delimited LaTeX storage for equations
 
 ## Decision
 
-Persist every equation as a compact semantic HTML node containing LaTeX, not
-MathLive's rendered DOM. MathLive markup exists only in TinyMCE while the user
-edits content.
-
-This schema is for local development and replaces the earlier
-`.equation-latex[data-latex]` token. There is no reader for that token or
-database migration. A separate load-time fallback rehydrates legacy rendered
-`.mq-math-mode[data-latex]` records because their MathLive child markup may be
-incompatible with the current renderer.
-
-## Persisted contract
-
-Each saved equation is exactly one empty `span`:
+Persist equations as standard LaTeX delimiters embedded directly in rich-text
+HTML. Do not persist renderer markup or a custom `data-*` math node.
 
 ```html
-<span data-math="latex" data-display="inline" data-latex="\\frac{a}{b}"></span>
+<p>Diện tích là \(S=\frac{1}{2}ah\).</p>
+<p>\[\int_0^1 x^2\,dx=\frac{1}{3}\]</p>
 ```
 
-`data-math="latex"` identifies the node type. `data-latex` is the canonical
-equation value. `data-display` is required in newly serialized content and is
-either `inline` or `block`.
-
-```html
-<span data-math="latex" data-display="block" data-latex="\\int_0^1 x^2\\,dx"></span>
-```
-
-The token has no MathLive child markup and does not depend on a particular
-MathLive rendering version. The surrounding rich HTML is preserved unchanged.
-There is intentionally no schema version attribute: changing the renderer or
-CSS is not a persisted-data breaking change. Add a separate version attribute
-only if the stored contract itself becomes incompatible.
+`\(...\)` represents inline math. `\[...\]` represents block math. This is
+the only persisted equation contract. The plugin does not read or migrate the
+previous `data-math`, `.equation-latex`, or stored `.mq-math-mode` formats.
 
 ## Runtime flow
 
 ### Load into TinyMCE
 
-Before content enters TinyMCE, replace either
-`span[data-math="latex"][data-latex]` or legacy
-`span.mq-math-mode[data-latex]` with a freshly rendered runtime node:
+Before content enters TinyMCE, parse delimiters only from HTML text nodes.
+Replace each complete delimiter pair with a non-editable runtime span:
 
 ```html
 <span class="mq-math-mode" data-latex="..." data-display="inline|block">{MathLive markup}</span>
 ```
 
-The `render_latex(latex)` hook produces the child markup. For legacy runtime
-records, discard the entire old MathLive child tree and render from
-`data-latex`; never reuse the old markup. The application normally implements
-the hook with `MathLive.convertLatexToMarkup(latex)` after loading MathLive in
-the TinyMCE parent page. If rendering fails, retain the runtime node and show
-the LaTeX text as a fallback.
+Use `render_latex(latex)` to create the MathLive child markup. `\(` produces
+`data-display="inline"`; `\[` produces `data-display="block"`.
 
-The runtime node remains non-editable and clickable. Its `data-display` value
-is normalized to `inline` unless the stored node explicitly specifies `block`.
+The parser does not scan raw HTML, element attributes, or text inside `code`,
+`pre`, `script`, or `style`. A delimiter without a matching closing delimiter
+remains normal text. A delimiter pair must occur in one text node; it cannot
+span HTML elements or block boundaries.
 
 ### Save from TinyMCE
 
-When TinyMCE serializes HTML in `latex-html` mode, replace each runtime
-`span.mq-math-mode[data-latex]` with the persisted node. Copy `data-latex` and
-emit `data-display="block"` only for a runtime block equation; otherwise emit
-`data-display="inline"`.
+When TinyMCE serializes HTML in `latex-html` mode, replace every runtime
+`.mq-math-mode[data-latex]` with a text node. Emit `\[latex\]` if
+`data-display` is `block`; otherwise emit `\(latex\)`.
 
-Serialization operates on TinyMCE's output string, never the live editor DOM.
-An equation without non-empty `data-latex` remains unchanged and logs a warning
-instead of losing content.
-
-### Editing behavior
-
-New equations default to `data-display="inline"`. When an existing equation is
-opened in the dialog, its runtime `data-display` is passed through the dialog
-and back to insertion so an unchanged block equation remains block after
-pressing Insert.
+Serialization operates on the output string's detached DOM and never mutates
+the live editor DOM. A runtime span without a non-empty `data-latex` remains
+unchanged and emits a warning.
 
 ## Compatibility and API
 
-- `equation_editor_storage_format: 'mathlive-html'` keeps rendered MathLive
-  HTML as the output and remains the default.
-- `equation_editor_storage_format: 'latex-html'` enables the compact schema.
+- `equation_editor_storage_format: 'mathlive-html'` retains rendered MathLive
+  HTML and remains the default.
+- `equation_editor_storage_format: 'latex-html'` enables delimited LaTeX
+  storage.
 - `equation_editor_config.render_latex: (latex: string) => string` is required
-  in `latex-html` mode and hydrates persisted math nodes before editing.
-- The plugin does not hydrate `.equation-latex[data-latex]`; callers must
-  convert old local fixtures themselves if they still need them.
-- Legacy `.mq-math-mode[data-latex]` content is accepted only as a renderer
-  fallback. The next `getContent()` or save serializes it as the new persisted
-  schema.
+  in `latex-html` mode to hydrate delimiters before editing.
+- External consumers render saved `\(...\)` and `\[...\]` with their chosen
+  LaTeX renderer.
 
 ## Safety and validation
 
-- Construct persisted nodes with DOM APIs; do not interpolate unescaped LaTeX
-  into HTML attributes.
+- Use DOM text nodes when serializing delimiters; do not interpolate LaTeX into
+  raw HTML.
 - Preserve LaTeX bytes, including valid `\\` line breaks and `cases` content.
-- Consumers outside TinyMCE render `[data-math="latex"][data-latex]` and use
-  `data-display` to choose inline or block layout.
-- Server-side sanitization must allow only `data-math="latex"`,
-  `data-display="inline|block"`, and an appropriately bounded `data-latex`
-  value for math nodes.
+- Treat delimiter parsing as content syntax only; do not parse attributes or
+  code examples.
+- Server-side sanitization must preserve backslashes and normal HTML escaping
+  in text content.
 
 ## Verification
 
 Browser tests must prove:
 
-1. Saving a runtime equation produces the exact compact node with
-   `data-math`, `data-display`, and `data-latex`.
-2. A compact inline or block node hydrates into a clickable runtime MathLive
-   node and keeps its display mode through save.
-3. An existing block equation remains `block` after opening the dialog and
-   pressing Insert without edits.
-4. Text, links, and non-equation HTML remain unchanged by conversion.
-5. Special LaTeX characters and multiline formulas preserve their exact
-   `data-latex` bytes.
-6. Legacy `.mq-math-mode[data-latex]` markup is discarded and re-rendered from
-   its LaTeX before being saved as the new schema.
-7. `mathlive-html` remains covered by its existing output assertion.
+1. Runtime inline and block equations serialize exactly to `\(...\)` and
+   `\[...\]`.
+2. Delimited inline and block equations hydrate into clickable runtime spans
+   with the correct display mode.
+3. Text, links, special LaTeX characters, and multiline formulas round-trip
+   unchanged.
+4. Unclosed delimiters and delimiters in `code` remain literal text.
+5. Renderer failure displays LaTeX fallback text without losing the equation.
+6. `mathlive-html` remains covered by its existing output assertion.
 
 ## Out of scope
 
-- Bulk database migration or compatibility parsing for `.equation-latex`.
-- Rendering compact nodes outside TinyMCE.
-- A UI control for users to select inline versus block mode.
-- Converting full rich-text documents into delimiter-based LaTeX or Markdown.
+- Reading or migrating earlier `data-math`, `.equation-latex`, or stored
+  MathLive markup formats.
+- A bulk database migration.
+- A block/inline selection UI.
+- Converting full rich-text documents into standalone `.tex` files.

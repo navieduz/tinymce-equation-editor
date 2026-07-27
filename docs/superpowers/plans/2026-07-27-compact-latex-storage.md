@@ -1,122 +1,90 @@
-# Compact LaTeX Storage Implementation Plan
+# Delimited LaTeX Storage Implementation Plan
 
-> **Status:** Implemented on 2026-07-27. This document records the final
-> schema and verification contract for follow-up work.
+> **Status:** Implemented on 2026-07-27. This document records the current
+> delimiter-storage contract for follow-up work.
 
-**Goal:** Persist equations as compact LaTeX nodes while rendering MathLive
-markup only inside TinyMCE.
+**Goal:** Store inline equations as `\(...\)` and block equations as
+`\[...\]` inside rich-text HTML, while retaining MathLive markup only at
+runtime in TinyMCE.
 
-**Architecture:** `EquationContentTransformer` converts between runtime
-`.mq-math-mode` spans and stored semantic math spans. `Plugin.ts` hydrates
-stored content before TinyMCE loads it and compacts only HTML serialization in
-`latex-html` mode. The editor dialog carries display mode from an existing
-runtime node through reinsertion.
+**Architecture:** `EquationContentTransformer` converts runtime
+`.mq-math-mode` spans to delimiter text nodes and parses delimiters in stored
+HTML text nodes into fresh runtime spans. `Plugin.ts` invokes those conversions
+only in `latex-html` mode and continues to use runtime `data-display` for the
+equation dialog.
 
-**Tech Stack:** TypeScript 3.9, Yarn 4.15, TinyMCE 5/6 plugin APIs, browser DOM
-APIs, host-supplied MathLive renderer, Bedrock/Agar/McAgar browser tests,
-TSLint, and Grunt.
+**Tech Stack:** TypeScript 3.9, Yarn 4.15, TinyMCE 5/6, browser DOM APIs,
+host-supplied MathLive renderer, Bedrock/Agar/McAgar, TSLint, and Grunt.
 
 ## Global Constraints
 
-- Persisted equation token:
-  `<span data-math="latex" data-display="inline|block" data-latex="..."></span>`.
-- Runtime equation token:
-  `<span class="mq-math-mode" data-latex="..." data-display="inline|block">{renderer output}</span>`
-  with `contenteditable="false"`.
-- `data-latex` is canonical. Never infer LaTeX from MathLive child markup.
-- Normalize absent or invalid display values to `inline`.
-- Do not read or write `.equation-latex[data-latex]`; compatibility with that
-  stored token is intentionally out of scope.
-- Rehydrate legacy `.mq-math-mode[data-latex]` nodes from LaTeX, discarding
-  their child MathLive DOM, then serialize them as the new token on save.
-- Preserve LaTeX bytes and do not mutate TinyMCE's live DOM during output
-  serialization.
-- `latex-html` is opt-in and requires `render_latex`; `mathlive-html` remains
-  the default.
+- Persisted inline math is `\(latex\)`; persisted block math is `\[latex\]`.
+- Runtime math is a non-editable `.mq-math-mode` span with `data-latex` and
+  `data-display`.
+- Parse only text nodes, never raw HTML, attributes, `code`, `pre`, `script`,
+  or `style` content.
+- Leave unmatched delimiters literal.
+- Do not read or migrate `data-math`, `.equation-latex`, or stored
+  `.mq-math-mode` content.
+- Preserve LaTeX bytes and never mutate TinyMCE's live editor DOM while
+  serializing output.
+- `latex-html` requires `render_latex`; `mathlive-html` remains the default.
 
 ---
 
 ## File structure
 
-- `src/main/ts/EquationContentTransformer.ts`: DOM conversion, display-mode
-  normalization, and legacy runtime rehydration.
-- `src/main/ts/Plugin.ts`: TinyMCE lifecycle integration and dialog display
-  propagation.
-- `src/test/ts/browser/EquationContentTransformerTest.ts`: compact schema,
-  fallback, special LaTeX, and block round-trip coverage.
-- `src/test/ts/browser/EquationDialogTest.ts`: regression coverage for editing
-  a second formula and preserving block mode.
-- `src/test/ts/browser/PluginTest.ts`: compact-storage integration and runtime
-  default-display assertions.
-- `src/demo/ts/Demo.ts`: permits persisted math data attributes in TinyMCE.
-- `README.md`: public schema and host-renderer contract.
+- `src/main/ts/EquationContentTransformer.ts`: delimiter parser and serializer.
+- `src/main/ts/Plugin.ts`: TinyMCE lifecycle integration and runtime display
+  propagation for the equation dialog.
+- `src/test/ts/browser/EquationContentTransformerTest.ts`: delimiter parsing,
+  escaping, fallback, literal-text, and block coverage.
+- `src/test/ts/browser/PluginTest.ts`: compact-storage integration coverage.
+- `src/test/ts/browser/EquationDialogTest.ts`: dialog display preservation.
+- `src/demo/ts/Demo.ts` and `README.md`: public integration contract.
 
 ## Completed Tasks
 
-### Task 1: Replace the persisted token schema
+### Task 1: Implement delimited storage
 
 **Files:**
 - Modified: `src/main/ts/EquationContentTransformer.ts`
 - Modified: `src/test/ts/browser/EquationContentTransformerTest.ts`
 
-- [x] Replace runtime equations with a freshly created stored `span` carrying
-  `data-math="latex"`, canonical `data-latex`, and normalized `data-display`.
-- [x] Hydrate `span[data-math="latex"][data-latex]`; copy display mode to the
-  `.mq-math-mode` runtime span.
-- [x] Also accept a legacy `span.mq-math-mode[data-latex]`, discard its stale
-  MathLive child markup, and create a fresh runtime span with `render_latex`.
-- [x] Default missing display mode to `inline` and preserve `block` through a
-  stored → runtime → stored round trip.
-- [x] Retain malformed runtime nodes without `data-latex` and preserve renderer
-  fallback behavior.
+- [x] Serialize runtime spans into DOM text nodes with `\(...\)` or `\[...\]`.
+- [x] Parse complete delimiter pairs within individual text nodes into fresh
+  runtime spans generated by `render_latex`.
+- [x] Normalize runtime display to `inline` or `block` from the delimiter kind.
+- [x] Preserve literal unmatched delimiters and skip protected code-like tags.
+- [x] Retain malformed runtime spans without `data-latex` and renderer fallback
+  behavior.
 
-### Task 2: Preserve display mode in editor commands
+### Task 2: Align TinyMCE integration and demo
 
 **Files:**
-- Modified: `src/main/ts/Plugin.ts`
-- Modified: `src/test/ts/browser/EquationDialogTest.ts`
 - Modified: `src/test/ts/browser/PluginTest.ts`
+- Modified: `src/test/ts/browser/DemoContentPrinterTest.ts`
+- Modified: `src/demo/ts/Demo.ts`
+- Modified: `README.md`
 
-- [x] Insert new runtime equations with `data-display="inline"` by default.
-- [x] Pass `data-display` from a clicked runtime node to `equation-window` and
-  from dialog action to `equation-insert`.
-- [x] Verify that opening formula A, then opening block formula B and pressing
-  Insert without edits keeps B's LaTeX, rendered HTML, and `block` display.
-- [x] Restrict compact serialization to TinyMCE HTML output so text and tree
-  output formats remain untouched.
+- [x] Assert `latex-html` load/save output uses delimiters.
+- [x] Keep runtime `data-latex` and `data-display` for click/edit behavior only.
+- [x] Document inline and block delimiter output plus the required host renderer.
+- [x] Remove custom persisted `data-math` contract from the demo.
 
-### Task 3: Align the demo and public contract
+### Task 3: Build and verify distribution
 
 **Files:**
-- Modified: `src/demo/ts/Demo.ts`
-- Modified: `src/test/ts/browser/DemoContentPrinterTest.ts`
-- Modified: `README.md`
 - Modified: `dist/equation-editor/plugin.js`
 - Modified: `dist/equation-editor/plugin.min.js`
 
-- [x] Allow `data-math`, `data-display`, and `data-latex` in the demo's
-  TinyMCE configuration.
-- [x] Document the exact persisted inline schema, block value, host rendering
-  responsibility, and lack of legacy-schema support.
-- [x] Rebuild the distributable plugin bundle.
-
-## Verification Record
-
-- [x] `EquationContentTransformerTest.ts` passes for inline hydration,
-  fallback rendering, special LaTeX, block round-trip, and legacy runtime
-  rehydration.
-- [x] `EquationDialogTest.ts` passes for cross-dialog HTML isolation and block
-  display preservation.
-- [x] `DemoContentPrinterTest.ts` passes with the new persisted node.
-- [x] `npm run lint`, `tsc --noEmit`, and `npm run build` pass.
-- [x] The legacy `browser.PluginTest` equation-insert assertion remains a
-  Chrome 150 baseline failure; compact-storage assertions run before it and
-  pass.
+- [x] Run focused transformer, dialog, and demo browser tests.
+- [x] Run `npm run lint`, `tsc --noEmit`, and `npm run build`.
+- [x] Rebuild distributable plugin bundles.
 
 ## Follow-up Boundaries
 
-- Add a block/inline selection UI only if product requirements introduce it.
-- Add `data-math-version` only for a future breaking persisted-schema change.
-- If data must be migrated outside local development, define a separate
-  explicit migration and compatibility policy rather than reintroducing the
-  legacy parser implicitly.
+- Add a block/inline selection UI only when product requirements introduce it.
+- Add optional escaped-literal delimiter syntax only if authored content needs
+  to show `\(...\)` as prose outside `code` blocks.
+- Define a separate migration if production data must move from earlier formats.
