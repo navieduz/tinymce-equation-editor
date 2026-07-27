@@ -15,6 +15,7 @@ interface Group {
 
 interface DataEquationWindow {
     latex?: string;
+    display?: string;
     currentTarget?: string;
 }
 
@@ -742,6 +743,7 @@ const setup = (editor, url) => {
                 editor.execCommand('equation-insert', {
                     html: htmlLatex,
                     latex: data.latex,
+                    display: data.display,
                     currentTarget: data.currentTarget,
                 });
                 editor.windowManager.close();
@@ -772,7 +774,8 @@ const setup = (editor, url) => {
         }
 
         // Add span.mq-math-mode
-        const content = `<span class='mq-math-mode' data-latex='${data.latex}'>${data.html}</span>${editorSettings.space_after_content}`;
+        const display = data.display === 'block' ? 'block' : 'inline';
+        const content = `<span class='mq-math-mode' data-latex='${data.latex}' data-display='${display}'>${data.html}</span>${editorSettings.space_after_content}`;
 
         if (data.currentTarget) {
             editor.selection.select(data.currentTarget);
@@ -960,6 +963,7 @@ function setOnClickEquationContent(editor) {
             event.stopPropagation();
             editor.execCommand('equation-window', {
                 latex: event.currentTarget.dataset.latex,
+                display: event.currentTarget.dataset.display,
                 currentTarget: event.currentTarget,
             });
         };

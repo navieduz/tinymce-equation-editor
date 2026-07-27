@@ -22,7 +22,9 @@ export const toStoredEquationContent = (content: string): string => {
         }
 
         const compactEquation = equationDocument.createElement('span');
-        compactEquation.className = 'equation-latex';
+        compactEquation.dataset.math = 'latex';
+        compactEquation.dataset.display =
+            equation.dataset.display === 'block' ? 'block' : 'inline';
         compactEquation.dataset.latex = latex;
         equation.parentNode!.replaceChild(compactEquation, equation);
     }
@@ -36,7 +38,7 @@ export const toRuntimeEquationContent = (
 ): string => {
     const equationDocument = createEquationDocument(content);
     const equations = Array.prototype.slice.call(
-        equationDocument.body.querySelectorAll('span.equation-latex[data-latex]')
+        equationDocument.body.querySelectorAll('span[data-math="latex"][data-latex]')
     ) as HTMLSpanElement[];
 
     for (const equation of equations) {
@@ -45,6 +47,8 @@ export const toRuntimeEquationContent = (
 
         runtimeEquation.className = 'mq-math-mode';
         runtimeEquation.dataset.latex = latex;
+        runtimeEquation.dataset.display =
+            equation.dataset.display === 'block' ? 'block' : 'inline';
         runtimeEquation.contentEditable = 'false';
 
         try {

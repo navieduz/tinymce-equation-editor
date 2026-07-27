@@ -117,12 +117,14 @@ tinymce.init({
 For example, saving `y^x` stores exactly:
 
 ```html
-<span class="equation-latex" data-latex="y^x"></span>
+<span data-math="latex" data-display="inline" data-latex="y^x"></span>
 ```
 
 An existing `.mq-math-mode[data-latex]` record is compacted on its next successful
 save. Consumers that render saved content outside TinyMCE must render
-`.equation-latex[data-latex]` themselves.
+`[data-math="latex"][data-latex]` themselves; `data-display` is either `inline`
+or `block`. The plugin only hydrates this schema; the former
+`.equation-latex[data-latex]` format is not supported.
 
 
 ## Development

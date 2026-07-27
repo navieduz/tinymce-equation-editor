@@ -17,7 +17,7 @@ UnitTest.asynctest('browser.EquationDialogTest', (success, failure) => {
                         GeneralSteps.sequence([
                             Step.sync(() => {
                                 editor.setContent(
-                                    '<p><span class="mq-math-mode" data-latex="a"><var>a</var></span><span class="mq-math-mode" data-latex="b"><var>b</var></span></p>'
+                                    '<p><span class="mq-math-mode" data-latex="a" data-display="inline"><var>a</var></span><span class="mq-math-mode" data-latex="b" data-display="block"><var>b</var></span></p>'
                                 );
 
                                 const dialogs: Array<any> = [];
@@ -35,6 +35,7 @@ UnitTest.asynctest('browser.EquationDialogTest', (success, failure) => {
                                     );
                                     editor.execCommand('equation-window', {
                                         latex: 'a',
+                                        display: 'inline',
                                         currentTarget: equations[0],
                                     });
                                     dialogs[0].onMessage(null, {
@@ -44,6 +45,7 @@ UnitTest.asynctest('browser.EquationDialogTest', (success, failure) => {
                                     });
                                     editor.execCommand('equation-window', {
                                         latex: 'b',
+                                        display: 'block',
                                         currentTarget: equations[1],
                                     });
                                     dialogs[1].onAction();
@@ -57,6 +59,9 @@ UnitTest.asynctest('browser.EquationDialogTest', (success, failure) => {
                                     expect(updatedEquations[1].innerHTML).to.equal(
                                         '<var>b</var>'
                                     );
+                                    expect(
+                                        updatedEquations[1].getAttribute('data-display')
+                                    ).to.equal('block');
                                 } finally {
                                     editor.windowManager.openUrl = openUrl;
                                     editor.windowManager.close = close;

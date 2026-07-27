@@ -13,7 +13,7 @@ function init(selector, inline: boolean, buttonId: string, outputId: string) {
         selector,
         inline,
         // verify_html: false,
-        extended_valid_elements: 'span[class|style|data-atom-id]',
+        extended_valid_elements: 'span[class|style|data-atom-id|data-math|data-display|data-latex]',
         plugins: 'code equation-editor',
         toolbar: 'equation-editor',
         content_css: [

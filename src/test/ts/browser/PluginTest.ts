@@ -17,7 +17,7 @@ UnitTest.asynctest('browser.CompactStoragePluginTest', (success, failure) => {
                         GeneralSteps.sequence([
                             Step.sync(() => {
                                 editor.setContent(
-                                    '<p><span class="equation-latex" data-latex="y^x"></span></p>'
+                                    '<p><span data-math="latex" data-display="inline" data-latex="y^x"></span></p>'
                                 );
                             }),
                             Step.sync(() => {
@@ -25,13 +25,13 @@ UnitTest.asynctest('browser.CompactStoragePluginTest', (success, failure) => {
                                     editor.getBody().querySelector('.mq-math-mode')
                                 ).not.to.equal(null);
                                 expect(editor.getContent()).to.equal(
-                                    '<p><span class="equation-latex" data-latex="y^x"></span></p>'
+                                    '<p><span data-math="latex" data-display="inline" data-latex="y^x"></span></p>'
                                 );
                                 expect(
                                     editor.getBody().querySelector('.mq-math-mode')
                                 ).not.to.equal(null);
                                 expect(
-                                    editor.getBody().querySelector('.equation-latex')
+                                    editor.getBody().querySelector('[data-math="latex"]')
                                 ).to.equal(null);
                             }),
                         ])
@@ -66,7 +66,7 @@ UnitTest.asynctest('browser.CompactStoragePluginTest', (success, failure) => {
                             }),
                             Step.sync(() => {
                                 expect(editor.getContent()).to.equal(
-                                    '<p><span class="equation-latex" data-latex="y^x"></span></p>'
+                                    '<p><span data-math="latex" data-display="inline" data-latex="y^x"></span></p>'
                                 );
                             }),
                         ])
@@ -108,7 +108,7 @@ UnitTest.asynctest('browser.PluginTest', (success, failure) => {
                                 latex: 'y^x',
                             }),
                             tinyApis.sAssertContent(
-                                '<p><span class="mq-math-mode" data-latex="y^x" contenteditable="false"><var>y</var><span class="mq-supsub mq-non-leaf mq-sup-only"><span class="mq-sup"><var>x</var></span></span></span>&nbsp;<br data-mce-bogus="1"></p>'
+                                '<p><span class="mq-math-mode" data-latex="y^x" data-display="inline" contenteditable="false"><var>y</var><span class="mq-supsub mq-non-leaf mq-sup-only"><span class="mq-sup"><var>x</var></span></span></span>&nbsp;<br data-mce-bogus="1"></p>'
                             ),
                         ])
                     ),
