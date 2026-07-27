@@ -65,7 +65,6 @@ const setup = (editor, url) => {
     let groups = getSettings(editor, 'equation_editor_button_groups');
     let btnBar = getSettings(editor, 'equation_editor_button_bar');
     let groupName = getSettings(editor, 'equation_editor_group');
-    let htmlLatex = '';
 
     if (typeof groupName === 'undefined') {
         groupName = 'basic';
@@ -719,6 +718,10 @@ const setup = (editor, url) => {
     editor.addCommand('equation-window', function (
         data: DataEquationWindow = {}
     ) {
+        let htmlLatex = data.currentTarget
+            ? (data.currentTarget as any).innerHTML
+            : '';
+
         editor.windowManager.openUrl({
             url: editorSettings.url,
             title: editorSettings.title,
