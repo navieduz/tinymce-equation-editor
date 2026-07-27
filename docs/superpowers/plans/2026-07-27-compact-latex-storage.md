@@ -25,8 +25,10 @@ TSLint, and Grunt.
   with `contenteditable="false"`.
 - `data-latex` is canonical. Never infer LaTeX from MathLive child markup.
 - Normalize absent or invalid display values to `inline`.
-- Do not read or write `.equation-latex[data-latex]`; backward compatibility is
-  intentionally out of scope.
+- Do not read or write `.equation-latex[data-latex]`; compatibility with that
+  stored token is intentionally out of scope.
+- Rehydrate legacy `.mq-math-mode[data-latex]` nodes from LaTeX, discarding
+  their child MathLive DOM, then serialize them as the new token on save.
 - Preserve LaTeX bytes and do not mutate TinyMCE's live DOM during output
   serialization.
 - `latex-html` is opt-in and requires `render_latex`; `mathlive-html` remains
@@ -36,8 +38,8 @@ TSLint, and Grunt.
 
 ## File structure
 
-- `src/main/ts/EquationContentTransformer.ts`: DOM conversion and display-mode
-  normalization.
+- `src/main/ts/EquationContentTransformer.ts`: DOM conversion, display-mode
+  normalization, and legacy runtime rehydration.
 - `src/main/ts/Plugin.ts`: TinyMCE lifecycle integration and dialog display
   propagation.
 - `src/test/ts/browser/EquationContentTransformerTest.ts`: compact schema,
@@ -59,8 +61,10 @@ TSLint, and Grunt.
 
 - [x] Replace runtime equations with a freshly created stored `span` carrying
   `data-math="latex"`, canonical `data-latex`, and normalized `data-display`.
-- [x] Hydrate only `span[data-math="latex"][data-latex]`; copy display mode to
-  the `.mq-math-mode` runtime span.
+- [x] Hydrate `span[data-math="latex"][data-latex]`; copy display mode to the
+  `.mq-math-mode` runtime span.
+- [x] Also accept a legacy `span.mq-math-mode[data-latex]`, discard its stale
+  MathLive child markup, and create a fresh runtime span with `render_latex`.
 - [x] Default missing display mode to `inline` and preserve `block` through a
   stored → runtime → stored round trip.
 - [x] Retain malformed runtime nodes without `data-latex` and preserve renderer
@@ -99,7 +103,8 @@ TSLint, and Grunt.
 ## Verification Record
 
 - [x] `EquationContentTransformerTest.ts` passes for inline hydration,
-  fallback rendering, special LaTeX, and block round-trip.
+  fallback rendering, special LaTeX, block round-trip, and legacy runtime
+  rehydration.
 - [x] `EquationDialogTest.ts` passes for cross-dialog HTML isolation and block
   display preservation.
 - [x] `DemoContentPrinterTest.ts` passes with the new persisted node.

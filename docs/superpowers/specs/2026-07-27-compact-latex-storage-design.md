@@ -7,8 +7,10 @@ MathLive's rendered DOM. MathLive markup exists only in TinyMCE while the user
 edits content.
 
 This schema is for local development and replaces the earlier
-`.equation-latex[data-latex]` token. There is no backward-compatible reader or
-database migration for that format.
+`.equation-latex[data-latex]` token. There is no reader for that token or
+database migration. A separate load-time fallback rehydrates legacy rendered
+`.mq-math-mode[data-latex]` records because their MathLive child markup may be
+incompatible with the current renderer.
 
 ## Persisted contract
 
@@ -36,17 +38,20 @@ only if the stored contract itself becomes incompatible.
 
 ### Load into TinyMCE
 
-Before content enters TinyMCE, replace only
-`span[data-math="latex"][data-latex]` with a runtime node:
+Before content enters TinyMCE, replace either
+`span[data-math="latex"][data-latex]` or legacy
+`span.mq-math-mode[data-latex]` with a freshly rendered runtime node:
 
 ```html
 <span class="mq-math-mode" data-latex="..." data-display="inline|block">{MathLive markup}</span>
 ```
 
-The `render_latex(latex)` hook produces the child markup. The application
-normally implements it with `MathLive.convertLatexToMarkup(latex)` after
-loading MathLive in the TinyMCE parent page. If rendering fails, retain the
-runtime node and show the LaTeX text as a fallback.
+The `render_latex(latex)` hook produces the child markup. For legacy runtime
+records, discard the entire old MathLive child tree and render from
+`data-latex`; never reuse the old markup. The application normally implements
+the hook with `MathLive.convertLatexToMarkup(latex)` after loading MathLive in
+the TinyMCE parent page. If rendering fails, retain the runtime node and show
+the LaTeX text as a fallback.
 
 The runtime node remains non-editable and clickable. Its `data-display` value
 is normalized to `inline` unless the stored node explicitly specifies `block`.
@@ -78,6 +83,9 @@ pressing Insert.
   in `latex-html` mode and hydrates persisted math nodes before editing.
 - The plugin does not hydrate `.equation-latex[data-latex]`; callers must
   convert old local fixtures themselves if they still need them.
+- Legacy `.mq-math-mode[data-latex]` content is accepted only as a renderer
+  fallback. The next `getContent()` or save serializes it as the new persisted
+  schema.
 
 ## Safety and validation
 
@@ -103,7 +111,9 @@ Browser tests must prove:
 4. Text, links, and non-equation HTML remain unchanged by conversion.
 5. Special LaTeX characters and multiline formulas preserve their exact
    `data-latex` bytes.
-6. `mathlive-html` remains covered by its existing output assertion.
+6. Legacy `.mq-math-mode[data-latex]` markup is discarded and re-rendered from
+   its LaTeX before being saved as the new schema.
+7. `mathlive-html` remains covered by its existing output assertion.
 
 ## Out of scope
 

@@ -126,6 +126,10 @@ save. Consumers that render saved content outside TinyMCE must render
 or `block`. The plugin only hydrates this schema; the former
 `.equation-latex[data-latex]` format is not supported.
 
+For a legacy rendered `<span class="mq-math-mode" data-latex="...">` record,
+the plugin discards its MathLive child markup and re-renders it from
+`data-latex` when loading. The next save writes the compact schema above.
+
 
 ## Development
 

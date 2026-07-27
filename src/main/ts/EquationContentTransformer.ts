@@ -38,7 +38,9 @@ export const toRuntimeEquationContent = (
 ): string => {
     const equationDocument = createEquationDocument(content);
     const equations = Array.prototype.slice.call(
-        equationDocument.body.querySelectorAll('span[data-math="latex"][data-latex]')
+        equationDocument.body.querySelectorAll(
+            'span[data-math="latex"][data-latex], span.mq-math-mode[data-latex]'
+        )
     ) as HTMLSpanElement[];
 
     for (const equation of equations) {
