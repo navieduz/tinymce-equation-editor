@@ -18,7 +18,7 @@ interface DataEquationWindow {
     currentTarget?: string;
 }
 
-interface EditorSettings {
+export interface EditorSettings {
     url: string;
     origin: string;
     title: string;

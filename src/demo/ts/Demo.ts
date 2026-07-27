@@ -1,4 +1,4 @@
-import Plugin from '../../main/ts/Plugin';
+import Plugin, { EditorSettings } from '../../main/ts/Plugin';
 import { bindContentPrinter } from './DemoContentPrinter';
 
 declare let tinymce: any;
@@ -17,17 +17,18 @@ function init(selector, inline: boolean, buttonId: string, outputId: string) {
         plugins: 'code equation-editor',
         toolbar: 'equation-editor',
         content_css: [
-            'https://unpkg.com/mathlive@0.96.2/dist/mathlive-static.css',
-            'https://unpkg.com/mathlive@0.96.2/dist/mathlive-fonts.css'
+            'https://unpkg.com/mathlive@latest/mathlive-static.css',
+            'https://unpkg.com/mathlive@latest/mathlive-fonts.css'
         ],
         equation_editor_group: 'advanced',
         equation_editor_storage_format: 'latex-html',
         equation_editor_config: {
             render_latex: (latex) => (window as any).MathLive.convertLatexToMarkup(latex),
+            space_after_content: '',
             mathlive_config: {
                 smartMode: true,
             },
-        },
+        } as EditorSettings,
         setup: (editor) => {
             editor.on('init', () => {
                 const button = document.getElementById(buttonId) as HTMLButtonElement;

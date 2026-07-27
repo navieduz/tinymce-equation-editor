@@ -6,14 +6,14 @@
         <title>equation-editor demo page</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script src="https://cdn.tiny.cloud/1/cj518m1lys38ol19tbdo5ervejayy9zdwoqk0tx9q8l6byra/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-        <script src="https://unpkg.com/mathlive@0.96.2/dist/mathlive.min.js"></script>
+        <script src="https://unpkg.com/mathlive@latest/mathlive.min.js"></script>
         <script src="../../../scratch/compiled/demo.js" defer></script>
     </head>
     <body>
         <h1>Textarea Editor</h1>
         <textarea class="tinymce"></textarea>
         <p><button id="textarea-content-button" type="button">In content</button></p>
-        <textarea id="textarea-content-output" rows="8" readonly></textarea>
+        <textarea id="textarea-content-output" rows="12" style="width: 100%;" readonly></textarea>
         <hr />
         <h1>Inline Editor</h1>
         <div class="inline">
@@ -22,6 +22,6 @@
             </p>
         </div>
         <p><button id="inline-content-button" type="button">In content</button></p>
-        <textarea id="inline-content-output" rows="8" readonly></textarea>
+        <textarea id="inline-content-output" rows="12" style="width: 100%;" readonly></textarea>
     </body>
 </html>
