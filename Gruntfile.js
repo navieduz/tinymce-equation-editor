@@ -101,7 +101,21 @@ module.exports = function (grunt) {
                     },
                     { src: ['CHANGELOG.md'], dest: 'dist/equation-editor', expand: true },
                     { cwd: 'src/demo/html/editor', src: ['**'], dest: 'dist/equation-editor/editor', expand: true, filter: 'isFile' },
+                    { cwd: 'node_modules/mathlive', src: ['mathlive-static.css', 'mathlive-fonts.css'], dest: 'dist/equation-editor/editor/css', expand: true, filter: 'isFile' },
+                    { cwd: 'node_modules/mathlive', src: ['mathlive.min.js'], dest: 'dist/equation-editor/editor/js', expand: true, filter: 'isFile' },
                 ]
+            },
+            html: {
+                src: 'src/demo/html/editor/equation_editor.html',
+                dest: 'dist/equation-editor/editor/equation_editor.html',
+                options: {
+                    process: function (contents) {
+                        return contents
+                            .replace('https://unpkg.com/mathlive@latest/mathlive-static.css', 'css/mathlive-static.css')
+                            .replace('https://unpkg.com/mathlive@latest/mathlive-fonts.css', 'css/mathlive-fonts.css')
+                            .replace('https://unpkg.com/mathlive@latest/mathlive.min.js', 'js/mathlive.min.js');
+                    }
+                }
             }
         },
 
