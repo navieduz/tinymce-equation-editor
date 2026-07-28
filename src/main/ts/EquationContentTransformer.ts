@@ -1,3 +1,4 @@
+import { convertLatexToMarkup} from 'mathlive';
 export type LatexRenderer = (latex: string) => string;
 
 const createEquationDocument = (content: string): Document => {
@@ -19,7 +20,7 @@ const createRuntimeEquation = (
     runtimeEquation.contentEditable = 'false';
 
     try {
-        runtimeEquation.innerHTML = renderLatex(latex);
+        runtimeEquation.innerHTML = typeof renderLatex === 'function' ? renderLatex(latex) : convertLatexToMarkup(latex);
     } catch (error) {
         runtimeEquation.textContent = latex;
         // tslint:disable-next-line:no-console
@@ -75,8 +76,7 @@ export const toRuntimeEquationContent = (
     const walker = equationDocument.createTreeWalker(
         equationDocument.body,
         NodeFilter.SHOW_TEXT,
-        null,
-        false
+        null
     );
     const textNodes: Text[] = [];
     let textNode = walker.nextNode();

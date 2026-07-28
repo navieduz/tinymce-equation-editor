@@ -39,7 +39,7 @@ const setup = (editor, url) => {
         });
         editor.options.register('equation_editor_storage_format', {
             processor: 'string',
-            default: 'mathlive-html',
+            default: 'latex-html',
         });
         editor.options.register('equation_editor_group', {
             processor: 'string',
@@ -54,14 +54,7 @@ const setup = (editor, url) => {
     }
     const editorSettings: EditorSettings = getEditorSettings(editor);
     const storageFormat = getStorageFormat(editor);
-    if (
-        storageFormat === 'latex-html' &&
-        typeof editorSettings.render_latex === 'undefined'
-    ) {
-        throw new Error(
-            "'render_latex' property is required when equation_editor_storage_format is 'latex-html'"
-        );
-    }
+
     // Editor global params
     let groups = getSettings(editor, 'equation_editor_button_groups');
     let btnBar = getSettings(editor, 'equation_editor_button_bar');

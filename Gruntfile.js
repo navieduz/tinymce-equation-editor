@@ -53,7 +53,7 @@ module.exports = function (grunt) {
             }
         },
 
-        uglify: {
+        terser: {
             plugin: {
                 files: [
                     {
@@ -162,7 +162,7 @@ module.exports = function (grunt) {
         'tslint',
         'shell',
         'rollup',
-        'uglify',
+        'terser',
         'concat',
         'copy',
         'version'

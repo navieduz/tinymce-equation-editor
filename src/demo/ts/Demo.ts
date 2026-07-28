@@ -21,9 +21,7 @@ function init(selector, inline: boolean, buttonId: string, outputId: string) {
             'https://unpkg.com/mathlive@latest/mathlive-fonts.css'
         ],
         equation_editor_group: 'advanced',
-        equation_editor_storage_format: 'latex-html',
         equation_editor_config: {
-            render_latex: (latex) => (window as any).MathLive.convertLatexToMarkup(latex),
             space_after_content: '',
             mathlive_config: {
                 smartMode: true,
