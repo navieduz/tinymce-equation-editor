@@ -379,6 +379,156 @@ const setup = (editor, url) => {
             ],
             advanced: [
                 {
+                    name: 'Spacing',
+                    buttons: [
+                        {
+                            cmd: false,
+                            text: '\\,',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\;',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\:',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\quad',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\qquad',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\hspace{\\placeholder{1em}}',
+                            text: '\\hspace{1em}',
+                        },
+                    ],
+                },
+                {
+                    name: 'Numbers',
+                    buttons: [
+                        {
+                            cmd: false,
+                            text: '0',
+                        },
+                        {
+                            cmd: false,
+                            text: '1',
+                        },
+                        {
+                            cmd: false,
+                            text: '2',
+                        },
+                        {
+                            cmd: false,
+                            text: '3',
+                        },
+                        {
+                            cmd: false,
+                            text: '4',
+                        },
+                        {
+                            cmd: false,
+                            text: '5',
+                        },
+                        {
+                            cmd: false,
+                            text: '6',
+                        },
+                        {
+                            cmd: false,
+                            text: '7',
+                        },
+                        {
+                            cmd: false,
+                            text: '8',
+                        },
+                        {
+                            cmd: false,
+                            text: '9',
+                        },
+                        {
+                            cmd: false,
+                            text: ',',
+                        },
+                        {
+                            cmd: false,
+                            text: '.',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\pi',
+                        },
+                        {
+                            cmd: false,
+                            text: 'i',
+                        },
+                        {
+                            cmd: false,
+                            text: 'e',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\infty',
+                        },
+                    ],
+                },
+                {
+                    name: 'Arithmetic and Units',
+                    buttons: [
+                        {
+                            cmd: false,
+                            text: '+',
+                        },
+                        {
+                            cmd: false,
+                            text: '-',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\times',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\div',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\pm',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\overline',
+                            text: '\\overline{x}',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\cdot',
+                        },
+                        {
+                            cmd: true,
+                            latex: '/',
+                            text: '/',
+                        },
+                        {
+                            cmd: false,
+                            text: '$',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\degree',
+                        },
+                        {
+                            cmd: false,
+                            text: '%',
+                        },
+                    ],
+                },
+                {
                     name: 'Trigonometry',
                     buttons: [
                         {
@@ -495,6 +645,30 @@ const setup = (editor, url) => {
                             cmd: false,
                             text: '\\pi',
                         },
+                        {
+                            cmd: false,
+                            text: '\\Alpha',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\Beta',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\Gamma',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\varGamma',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\Delta',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\varDelta',
+                        },
                     ],
                 },
                 {
@@ -530,10 +704,6 @@ const setup = (editor, url) => {
                             cmd: false,
                             text: '\\infty',
                         },
-                        {
-                            cmd: true,
-                            text: '\\mathbb{Q}',
-                        },
                     ],
                 },
                 {
@@ -546,7 +716,7 @@ const setup = (editor, url) => {
                         },
                         {
                             cmd: true,
-                            latex: '\\begin{bmatrix} \\placeholder{} & \\placeholder{} & c \\\\ \\placeholder{} & \\placeholder{} & f \\\\ \\placeholder{} & \\placeholder{} & \\placeholder{} \\end{bmatrix}',
+                            latex: '\\begin{bmatrix} \\placeholder{} & \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} & \\placeholder{} \\end{bmatrix}',
                             text: '\\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}',
                         },
                     ],
@@ -556,11 +726,74 @@ const setup = (editor, url) => {
                     buttons: [
                         {
                             cmd: true,
-                            text: '\\begin{cases} x + y \\\\ x – y \\end{cases}',
+                            latex: '\\begin{cases} \\placeholder{} \\\\ \\placeholder{} \\end{cases}',
+                            text: '\\begin{cases} x + y \\\\ x - y \\end{cases}',
                         },
                         {
                             cmd: true,
-                            text: '\\begin{cases} x + y + z \\\\ x – y + z \\\\ x + y + z \\end{cases}',
+                            latex: '\\begin{cases} \\placeholder{} \\\\ \\placeholder{} \\\\ \\placeholder{} \\end{cases}',
+                            text: '\\begin{cases} x + y + z \\\\ x - y + z \\\\ x + y + z \\end{cases}',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\begin{cases} \\placeholder{} \\\\ \\placeholder{} \\\\ \\placeholder{} \\\\ \\placeholder{} \\end{cases}',
+                            text: '\\begin{cases} x + y + z + w \\\\ x - y + z + w \\\\ x + y + z + w \\\\ x + y + z + w \\end{cases}',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\left[ \\begin{matrix} \\placeholder{} \\\\ \\placeholder{} \\end{matrix} \\right.',
+                            text: '\\left[ \\begin{matrix} x + y \\\\ x - y \\end{matrix} \\right.',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\left[ \\begin{matrix} \\placeholder{} \\\\ \\placeholder{} \\\\ \\placeholder{} \\end{matrix} \\right.',
+                            text: '\\left[ \\begin{matrix} x + y + z \\\\ x - y + z \\\\ x + y + z \\end{matrix} \\right.',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\left[ \\begin{matrix} \\placeholder{} \\\\ \\placeholder{} \\\\ \\placeholder{} \\\\ \\placeholder{} \\end{matrix} \\right.',
+                            text: '\\left[ \\begin{matrix} x + y + z + w \\\\ x - y + z + w \\\\ x + y + z + w \\\\ x + y + z + w \\end{matrix} \\right.',
+                        },
+                    ],
+                },
+                {
+                    name: 'Exponents, Roots, Logs',
+                    buttons: [
+                        {
+                            cmd: true,
+                            latex: 'y^x',
+                            text: 'y^x',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\sqrt{x}',
+                            text: '\\sqrt{x}',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\sqrt[\\placeholder{3}]{\\placeholder{}}',
+                            text: '\\sqrt[\\placeholder{3}]{\\placeholder{x}}',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\sqrt[\\placeholder{}]{\\placeholder{}}',
+                            text: '\\sqrt[\\placeholder{n}]{\\placeholder{x}}',
+                        },
+                        {
+                            cmd: false,
+                            text: 'e^x',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\ln',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\log',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\log_b',
                         },
                     ],
                 },
@@ -578,6 +811,10 @@ const setup = (editor, url) => {
                         {
                             cmd: false,
                             text: '\\sim',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\backsim',
                         },
                         {
                             cmd: false,
@@ -632,16 +869,224 @@ const setup = (editor, url) => {
                             text: '\\mp',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
                             text: '\\vdots',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
                             text: '\\not\\vdots',
                         },
                     ],
-                }
-            ],
+                },
+                {
+                    name: 'Geometry',
+                    buttons: [
+                        {
+                            cmd: false,
+                            text: '\\leftarrow',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\rightarrow',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\leftrightarrow',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\Leftarrow',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\Rightarrow',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\Leftrightarrow',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\overline{ABC}',
+                            text: '\\overline{ABC}',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\overarc{ABC}',
+                            text: '\\overarc{ABC}',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\overrightarrow{ABC}',
+                            text: '\\overrightarrow{ABC}',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\overleftarrow{ABC}',
+                            text: '\\overleftarrow{ABC}',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\overgroup{ABC}',
+                            text: '\\overgroup{ABC}',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\parallel',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\perp',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\angle',
+                        },
+                        {
+                            cmd: false,
+                            text: 'm\\angle',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\bigtriangleup',
+                        },
+                        {
+                            cmd: false,
+                            text: '▱',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\bigodot',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\degree',
+                        },
+                    ],
+                },
+                {
+                    name: 'Sets',
+                    buttons: [
+                        {
+                            cmd: false,
+                            text: '\\mathbb{N}',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\mathbb{Q}',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\mathbb{R}',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\mathbb{Z}',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\mathbb{C}',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\emptyset',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\varnothing',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\cap',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\cup',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\subset',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\supset',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\setminus',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\smallsetminus',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\complement',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\in',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\notin',
+                        },
+                    ],
+                },
+                {
+                    name: 'Quantifiers',
+                    buttons: [
+                        {
+                            cmd: false,
+                            text: '\\forall',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\exists',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\nexists',
+                        },
+                    ],
+                },
+                {
+                    name: 'Groups',
+                    buttons: [
+                        {
+                            cmd: true,
+                            latex: '(',
+                            text: '(\\cdot)',
+                        },
+                        {
+                            cmd: true,
+                            latex: '[',
+                            text: '[\\cdot]',
+                        },
+                        {
+                            cmd: true,
+                            latex: '|',
+                            text: '|\\cdot|',
+                        },
+                        {
+                            cmd: false,
+                            text: '(x,y)',
+                        },
+                        {
+                            cmd: false,
+                            text: '[x,y]',
+                        },
+                        {
+                            cmd: false,
+                            text: '(x,y]',
+                        },
+                        {
+                            cmd: false,
+                            text: '[x,y)',
+                        },
+                    ],
+                },
+            ]
         };
     }
 
