@@ -70,7 +70,7 @@ const setup = (editor, url) => {
         groups = {
             basic: [
                 {
-                    name: 'Numbers',
+                    name: 'Số',
                     buttons: [
                         {
                             cmd: false,
@@ -139,7 +139,7 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Arithmetic and Units',
+                    name: 'Số học và Đơn vị',
                     buttons: [
                         {
                             cmd: false,
@@ -158,12 +158,17 @@ const setup = (editor, url) => {
                             text: '\\div',
                         },
                         {
+                            cmd: true,
+                            latex: '\\dfrac{\\placeholder{}}{\\placeholder{}}',
+                            text: '\\dfrac{a}{b}',
+                        },
+                        {
                             cmd: false,
                             text: '\\pm',
                         },
                         {
                             cmd: true,
-                            latex: '\\overline',
+                            latex: '\\overline{\\placeholder{}}',
                             text: '\\overline{x}',
                         },
                         {
@@ -192,16 +197,16 @@ const setup = (editor, url) => {
             ],
             intermediate: [
                 {
-                    name: 'Exponents, Roots, Logs',
+                    name: 'Lũy thừa, Căn, Logarit',
                     buttons: [
                         {
                             cmd: true,
-                            latex: 'y^x',
+                            latex: '\\placeholder{}^{\\placeholder{}}',
                             text: 'y^x',
                         },
                         {
                             cmd: true,
-                            latex: '\\sqrt{x}',
+                            latex: '\\sqrt{\\placeholder{}}',
                             text: '\\sqrt{x}',
                         },
                         {
@@ -215,7 +220,8 @@ const setup = (editor, url) => {
                             text: '\\sqrt[\\placeholder{n}]{\\placeholder{x}}',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: 'e^{\\placeholder{}}',
                             text: 'e^x',
                         },
                         {
@@ -227,13 +233,14 @@ const setup = (editor, url) => {
                             text: '\\log',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '\\log_{\\placeholder{}}',
                             text: '\\log_b',
                         },
                     ],
                 },
                 {
-                    name: 'Relations',
+                    name: 'Quan hệ',
                     buttons: [
                         {
                             cmd: false,
@@ -290,7 +297,7 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Geometry',
+                    name: 'Hình học',
                     buttons: [
                         {
                             cmd: false,
@@ -302,12 +309,12 @@ const setup = (editor, url) => {
                         },
                         {
                             cmd: true,
-                            latex: '\\overline',
+                            latex: '\\overline{\\placeholder{}}',
                             text: '\\overline{AB}',
                         },
                         {
                             cmd: true,
-                            latex: '\\overarc',
+                            latex: '\\overarc{\\placeholder{}}',
                             text: '\\overarc{AB}',
                         },
                         {
@@ -341,37 +348,41 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Groups',
+                    name: 'Dấu ngoặc',
                     buttons: [
                         {
                             cmd: true,
-                            latex: '(',
+                            latex: '(\\placeholder{})',
                             text: '(\\cdot)',
                         },
                         {
                             cmd: true,
-                            latex: '[',
+                            latex: '[\\placeholder{}]',
                             text: '[\\cdot]',
                         },
                         {
                             cmd: true,
-                            latex: '|',
+                            latex: '\\left| \\placeholder{} \\right|',
                             text: '|\\cdot|',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '(\\placeholder{},\\placeholder{})',
                             text: '(x,y)',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '[\\placeholder{},\\placeholder{}]',
                             text: '[x,y]',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '(\\placeholder{},\\placeholder{}]',
                             text: '(x,y]',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '[\\placeholder{},\\placeholder{})',
                             text: '[x,y)',
                         },
                     ],
@@ -379,7 +390,7 @@ const setup = (editor, url) => {
             ],
             advanced: [
                 {
-                    name: 'Spacing',
+                    name: 'Khoảng cách',
                     buttons: [
                         {
                             cmd: false,
@@ -409,7 +420,7 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Numbers',
+                    name: 'Số',
                     buttons: [
                         {
                             cmd: false,
@@ -478,7 +489,7 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Arithmetic and Units',
+                    name: 'Số học và Đơn vị',
                     buttons: [
                         {
                             cmd: false,
@@ -497,12 +508,17 @@ const setup = (editor, url) => {
                             text: '\\div',
                         },
                         {
+                            cmd: true,
+                            latex: '\\dfrac{\\placeholder{}}{\\placeholder{}}',
+                            text: '\\dfrac{a}{b}',
+                        },
+                        {
                             cmd: false,
                             text: '\\pm',
                         },
                         {
                             cmd: true,
-                            latex: '\\overline',
+                            latex: '\\overline{\\placeholder{}}',
                             text: '\\overline{x}',
                         },
                         {
@@ -529,7 +545,7 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Trigonometry',
+                    name: 'Lượng giác',
                     buttons: [
                         {
                             cmd: false,
@@ -579,10 +595,18 @@ const setup = (editor, url) => {
                             cmd: false,
                             text: '\\cot^{-1}',
                         },
+                        {
+                            cmd: false,
+                            text: '\\arccos',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\arctan',
+                        },
                     ],
                 },
                 {
-                    name: 'Statistics',
+                    name: 'Thống kê',
                     buttons: [
                         {
                             cmd: false,
@@ -593,33 +617,53 @@ const setup = (editor, url) => {
                             text: '\\sigma',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '\\overline{\\placeholder{}}',
                             text: '\\overline{x}',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '\\overline{\\placeholder{}}',
                             text: '\\overline{y}',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '\\placeholder{}^{\\placeholder{}}',
                             text: 'x^i',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '\\placeholder{}_{\\placeholder{}}',
                             text: 'x_i',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '\\placeholder{}!',
                             text: 'x!',
                         },
                         {
                             cmd: false,
                             text: '\\Sigma',
                         },
+                        {
+                            cmd: true,
+                            latex: '\\binom{\\placeholder{n}}{\\placeholder{k}}',
+                            text: '\\binom{n}{k}',
+                        },
+                        {
+                            cmd: true,
+                            latex: 'P(\\placeholder{})',
+                            text: 'P(A)',
+                        },
+                        {
+                            cmd: true,
+                            latex: 'P(\\placeholder{} \\mid \\placeholder{})',
+                            text: 'P(A \\mid B)',
+                        },
                     ],
                 },
                 {
-                    name: 'Greek',
+                    name: 'Chữ cái Hy Lạp',
                     buttons: [
                         {
                             cmd: false,
@@ -669,36 +713,60 @@ const setup = (editor, url) => {
                             cmd: false,
                             text: '\\varDelta',
                         },
+                        {
+                            cmd: false,
+                            text: '\\lambda',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\phi',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\omega',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\epsilon',
+                        },
                     ],
                 },
                 {
-                    name: 'Calculus',
+                    name: 'Giải tích',
                     buttons: [
                         {
                             cmd: false,
                             text: '\\int',
                         },
                         {
-                            cmd: false,
-                            text: '\\int_{a}^{b}',
+                            cmd: true,
+                            latex: '\\int_{\\placeholder{a}}^{\\placeholder{b}} \\placeholder{} \\, d\\placeholder{x}',
+                            text: '\\int_{a}^{b} f(x) \\, dx',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: 'd\\placeholder{x}',
                             text: 'dx',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '\\frac{d}{d\\placeholder{x}}',
                             text: '\\frac{d}{dx}',
                         },
                         {
-                            cmd: false,
-                            latex: '\\lim_{x \\to \\infty}',
+                            cmd: true,
+                            latex: '\\lim_{\\placeholder{x} \\to \\placeholder{}}',
                             text: '\\lim',
                         },
                         {
-                            cmd: false,
-                            latex: '\\sum_{i=1}^{n}',
+                            cmd: true,
+                            latex: '\\sum_{\\placeholder{i}=\\placeholder{1}}^{\\placeholder{n}}',
                             text: '\\sum',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\prod_{\\placeholder{i}=\\placeholder{1}}^{\\placeholder{n}}',
+                            text: '\\prod',
                         },
                         {
                             cmd: false,
@@ -707,7 +775,7 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Matrix',
+                    name: 'Ma trận',
                     buttons: [
                         {
                             cmd: true,
@@ -719,10 +787,20 @@ const setup = (editor, url) => {
                             latex: '\\begin{bmatrix} \\placeholder{} & \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} & \\placeholder{} \\end{bmatrix}',
                             text: '\\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}',
                         },
+                        {
+                            cmd: true,
+                            latex: '\\begin{pmatrix} \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} \\end{pmatrix}',
+                            text: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\begin{vmatrix} \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} \\end{vmatrix}',
+                            text: '\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}',
+                        },
                     ],
                 },
                 {
-                    name: 'Equation System',
+                    name: 'Hệ phương trình',
                     buttons: [
                         {
                             cmd: true,
@@ -757,16 +835,21 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Exponents, Roots, Logs',
+                    name: 'Lũy thừa, Căn, Logarit',
                     buttons: [
                         {
                             cmd: true,
-                            latex: 'y^x',
+                            latex: '\\placeholder{}^{\\placeholder{}}',
                             text: 'y^x',
                         },
                         {
                             cmd: true,
-                            latex: '\\sqrt{x}',
+                            latex: '\\placeholder{}_{\\placeholder{}}',
+                            text: 'x_i',
+                        },
+                        {
+                            cmd: true,
+                            latex: '\\sqrt{\\placeholder{}}',
                             text: '\\sqrt{x}',
                         },
                         {
@@ -780,7 +863,8 @@ const setup = (editor, url) => {
                             text: '\\sqrt[\\placeholder{n}]{\\placeholder{x}}',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: 'e^{\\placeholder{}}',
                             text: 'e^x',
                         },
                         {
@@ -792,13 +876,14 @@ const setup = (editor, url) => {
                             text: '\\log',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '\\log_{\\placeholder{}}',
                             text: '\\log_b',
                         },
                     ],
                 },
                 {
-                    name: 'Relations',
+                    name: 'Quan hệ',
                     buttons: [
                         {
                             cmd: false,
@@ -879,7 +964,7 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Geometry',
+                    name: 'Hình học',
                     buttons: [
                         {
                             cmd: false,
@@ -907,27 +992,27 @@ const setup = (editor, url) => {
                         },
                         {
                             cmd: true,
-                            latex: '\\overline{ABC}',
+                            latex: '\\overline{\\placeholder{}}',
                             text: '\\overline{ABC}',
                         },
                         {
                             cmd: true,
-                            latex: '\\overarc{ABC}',
-                            text: '\\overarc{ABC}',
+                            latex: '\\widehat{#?}',
+                            text: '\\widehat{ABC}',
                         },
                         {
                             cmd: true,
-                            latex: '\\overrightarrow{ABC}',
-                            text: '\\overrightarrow{ABC}',
+                            latex: '\\overrightarrow{\\placeholder{}\\placeholder{}}',
+                            text: '\\overrightarrow{AB}',
                         },
                         {
                             cmd: true,
-                            latex: '\\overleftarrow{ABC}',
-                            text: '\\overleftarrow{ABC}',
+                            latex: '\\overleftarrow{\\placeholder{}\\placeholder{}}',
+                            text: '\\overleftarrow{AB}',
                         },
                         {
                             cmd: true,
-                            latex: '\\overgroup{ABC}',
+                            latex: '\\overgroup{\\placeholder{}}',
                             text: '\\overgroup{ABC}',
                         },
                         {
@@ -965,7 +1050,7 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Sets',
+                    name: 'Tập hợp',
                     buttons: [
                         {
                             cmd: false,
@@ -1013,6 +1098,14 @@ const setup = (editor, url) => {
                         },
                         {
                             cmd: false,
+                            text: '\\subseteq',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\supseteq',
+                        },
+                        {
+                            cmd: false,
                             text: '\\setminus',
                         },
                         {
@@ -1034,7 +1127,7 @@ const setup = (editor, url) => {
                     ],
                 },
                 {
-                    name: 'Quantifiers',
+                    name: 'Lượng từ và Logic',
                     buttons: [
                         {
                             cmd: false,
@@ -1048,40 +1141,56 @@ const setup = (editor, url) => {
                             cmd: false,
                             text: '\\nexists',
                         },
+                        {
+                            cmd: false,
+                            text: '\\land',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\lor',
+                        },
+                        {
+                            cmd: false,
+                            text: '\\neg',
+                        },
                     ],
                 },
                 {
-                    name: 'Groups',
+                    name: 'Dấu ngoặc',
                     buttons: [
                         {
                             cmd: true,
-                            latex: '(',
+                            latex: '(\\placeholder{})',
                             text: '(\\cdot)',
                         },
                         {
                             cmd: true,
-                            latex: '[',
+                            latex: '[\\placeholder{}]',
                             text: '[\\cdot]',
                         },
                         {
                             cmd: true,
-                            latex: '|',
+                            latex: '\\left| \\placeholder{} \\right|',
                             text: '|\\cdot|',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '(\\placeholder{},\\placeholder{})',
                             text: '(x,y)',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '[\\placeholder{},\\placeholder{}]',
                             text: '[x,y]',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '(\\placeholder{},\\placeholder{}]',
                             text: '(x,y]',
                         },
                         {
-                            cmd: false,
+                            cmd: true,
+                            latex: '[\\placeholder{},\\placeholder{})',
                             text: '[x,y)',
                         },
                     ],
