@@ -21,6 +21,17 @@ UnitTest.test('browser.EquationContentTransformerTest', () => {
         '<p>A <span class="mq-math-mode" data-latex="\\frac{a}{b}" data-display="inline" contenteditable="false"><span class="rendered">\\frac{a}{b}</span></span> B</p>'
     );
 
+    const dollarDelimitedContent = toRuntimeEquationContent(
+        '<p>$y^x$</p><p>$$\\int_0^1 x^2\\,dx$$</p>',
+        (value) => '<span>' + value + '</span>'
+    );
+    expect(dollarDelimitedContent).to.equal(
+        '<p><span class="mq-math-mode" data-latex="y^x" data-display="inline" contenteditable="false"><span>y^x</span></span></p><p><span class="mq-math-mode" data-latex="\\int_0^1 x^2\\,dx" data-display="block" contenteditable="false"><span>\\int_0^1 x^2\\,dx</span></span></p>'
+    );
+    expect(toStoredEquationContent(dollarDelimitedContent)).to.equal(
+        '<p>\\(y^x\\)</p><p>\\[\\int_0^1 x^2\\,dx\\]</p>'
+    );
+
     const latex = '\\begin{cases}x & y \\\\ z\\end{cases}';
     const storedContent =
         '<p>\\(' +

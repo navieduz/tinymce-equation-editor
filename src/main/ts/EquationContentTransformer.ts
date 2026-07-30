@@ -91,7 +91,7 @@ export const toRuntimeEquationContent = (
             continue;
         }
 
-        const delimiterPattern = /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]/g;
+        const delimiterPattern = /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\$([\s\S]+?)\$/g;
         const fragment = equationDocument.createDocumentFragment();
         let lastIndex = 0;
         let match = delimiterPattern.exec(node.data);
@@ -103,8 +103,8 @@ export const toRuntimeEquationContent = (
             fragment.appendChild(
                 createRuntimeEquation(
                     equationDocument,
-                    match[1] === undefined ? match[2] : match[1],
-                    match[1] === undefined ? 'block' : 'inline',
+                    match[1] || match[2] || match[3] || match[4],
+                    match[2] || match[3] ? 'block' : 'inline',
                     renderLatex
                 )
             );
