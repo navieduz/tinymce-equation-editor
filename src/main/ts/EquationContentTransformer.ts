@@ -33,6 +33,10 @@ const createRuntimeEquation = (
 const shouldParseTextNode = (textNode: Text): boolean => {
     let parent = textNode.parentElement;
 
+    if (parent.classList.contains('mqe-question')) {
+        return false;
+    }
+
     while (parent !== null) {
         if (['CODE', 'PRE', 'SCRIPT', 'STYLE'].indexOf(parent.tagName) !== -1) {
             return false;
