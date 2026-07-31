@@ -1322,7 +1322,8 @@ const setup = (editor, url) => {
 
         // Add span.mq-math-mode
         const display = data.display === 'block' ? 'block' : 'inline';
-        const content = `<span class='mq-math-mode' data-latex='${data.latex}' data-display='${display}'>${data.html}</span>${editorSettings.space_after_content}`;
+        const latex = editor.dom.encode(data.latex);
+        const content = `<span class='mq-math-mode' data-latex='${latex}' data-display='${display}'>${data.html}</span>${editorSettings.space_after_content}`;
 
         if (data.currentTarget) {
             editor.selection.select(data.currentTarget);

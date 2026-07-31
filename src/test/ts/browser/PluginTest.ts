@@ -112,6 +112,20 @@ UnitTest.asynctest('browser.PluginTest', (success, failure) => {
                             ),
                         ])
                     ),
+                    Logger.t(
+                        'preserves apostrophes in equation latex',
+                        GeneralSteps.sequence([
+                            tinyApis.sExecCommand('equation-insert', {
+                                html: '<var>ABCD.A\'B\'C\'D\'</var>',
+                                latex: "ABCD.A'B'C'D'",
+                            }),
+                            Step.sync(() => {
+                                expect(
+                                    editor.getBody().querySelector('.mq-math-mode')?.dataset.latex
+                                ).to.equal("ABCD.A'B'C'D'");
+                            }),
+                        ])
+                    ),
                 ],
                 onSuccess,
                 onFailure
