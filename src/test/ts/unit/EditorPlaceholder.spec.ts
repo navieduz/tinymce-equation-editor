@@ -16,6 +16,7 @@ class FakeMathfield {
     public selection = { ranges: [[0, 0]], direction: 'none' };
     public delayedInput = false;
     public selectionOverlay: any = null;
+    public shadowStyle: any = null;
     public selectedElement = {
         getBoundingClientRect: () => ({
             bottom: 30,
@@ -38,6 +39,9 @@ class FakeMathfield {
         },
     };
     public shadowRoot = {
+        appendChild: (element: any) => {
+            this.shadowStyle = element;
+        },
         querySelector: (selector: string) => {
             if (selector === '.ML__selected') {
                 return this.selectedElement;
@@ -119,6 +123,29 @@ function loadEditorMethods() {
 }
 
 describe('Equation editor placeholder interaction', () => {
+    it('stretches SVG accents across the full base inside MathLive shadow DOM', () => {
+        const methods = loadEditorMethods();
+        const state: any = {
+            initEquation: methods.initEquation,
+            latex: '',
+            mathLiveConfig: {},
+            mathField: null,
+            sendLatex: () => undefined,
+        };
+
+        state.initEquation();
+
+        expect(state.mathField.shadowStyle.textContent).to.contain(
+            '.ML__latex .ML__center:has(.ML__stretchy)'
+        );
+        expect(state.mathField.shadowStyle.textContent).to.contain(
+            'width: 100% !important'
+        );
+        expect(state.mathField.shadowStyle.textContent).to.contain(
+            'margin-left: 0 !important'
+        );
+    });
+
     it('keeps a newly inserted placeholder editable after clicking it', () => {
         const methods = loadEditorMethods();
         const state: any = {

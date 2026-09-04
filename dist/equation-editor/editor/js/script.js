@@ -158,6 +158,17 @@ var app = new Vue({
 
             document.getElementById('math-field').appendChild(this.mathField);
 
+            const shadowRoot = this.mathField.shadowRoot;
+            if (shadowRoot) {
+                const style = document.createElement('style');
+                style.textContent =
+                    '.ML__latex .ML__center:has(.ML__stretchy) {' +
+                    'width: 100% !important;' +
+                    'margin-left: 0 !important;' +
+                    '}';
+                shadowRoot.appendChild(style);
+            }
+
             const content = this.mathField.shadowRoot?.querySelector(
                 '[part="content"]'
             );
