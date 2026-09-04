@@ -8,6 +8,8 @@ var app = new Vue({
         mathField: '',
         latex: '',
         mathLiveConfig: {},
+        placeholderSelection: null,
+        restorePlaceholderOnClick: false,
     },
     created() {
         if (window.addEventListener) {
@@ -58,10 +60,43 @@ var app = new Vue({
 
         initEquation() {
             this.mathField = new MathfieldElement();
+            this.placeholderSelection = null;
+            this.restorePlaceholderOnClick = false;
 
             this.mathField.addEventListener('input', (ev) => {
+                this.placeholderSelection = null;
+                this.restorePlaceholderOnClick = false;
                 this.latex = this.mathField.getValue();
                 this.sendLatex();
+            });
+
+            this.mathField.addEventListener(
+                'pointerdown',
+                (event) => {
+                    const selected = this.mathField.shadowRoot?.querySelector(
+                        '.ML__selected'
+                    );
+                    const rect = selected?.getBoundingClientRect();
+                    this.restorePlaceholderOnClick = Boolean(
+                        this.placeholderSelection &&
+                            rect &&
+                            event.clientX >= rect.left &&
+                            event.clientX <= rect.right &&
+                            event.clientY >= rect.top &&
+                            event.clientY <= rect.bottom
+                    );
+                    if (!this.restorePlaceholderOnClick) {
+                        this.placeholderSelection = null;
+                    }
+                },
+                true
+            );
+
+            this.mathField.addEventListener('click', () => {
+                if (this.restorePlaceholderOnClick) {
+                    this.mathField.selection = this.placeholderSelection;
+                }
+                this.restorePlaceholderOnClick = false;
             });
 
             if (typeof this.mathLiveConfig === 'object') {
@@ -83,9 +118,18 @@ var app = new Vue({
         },
 
         insert(button) {
-            this.mathField.insert(button.latex, {
-                focus: true,
-            });
+            if (
+                this.mathField.insert(button.latex, {
+                    focus: true,
+                    selectionMode: 'placeholder',
+                })
+            ) {
+                const selection = this.mathField.selection;
+                this.placeholderSelection =
+                    selection.ranges[0][0] === selection.ranges[0][1]
+                        ? null
+                        : selection;
+            }
         },
 
         sendLatex() {
