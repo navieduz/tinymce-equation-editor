@@ -76,6 +76,13 @@ var app = new Vue({
             this.mathField.addEventListener(
                 'keydown',
                 (event) => {
+                    if (event.ctrlKey && event.code === 'Space') {
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        this.mathField.executeCommand(['insert', '\\,']);
+                        return;
+                    }
+
                     if (
                         (event.key !== 'ArrowRight' &&
                             event.key !== 'ArrowLeft') ||

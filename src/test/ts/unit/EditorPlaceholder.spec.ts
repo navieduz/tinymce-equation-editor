@@ -123,6 +123,34 @@ function loadEditorMethods() {
 }
 
 describe('Equation editor placeholder interaction', () => {
+    it('inserts a thin space with Ctrl+Space', () => {
+        const methods = loadEditorMethods();
+        const state: any = {
+            initEquation: methods.initEquation,
+            latex: '',
+            mathLiveConfig: {},
+            mathField: null,
+            sendLatex: () => undefined,
+        };
+
+        state.initEquation();
+        const commands: any[] = [];
+        state.mathField.executeCommand = (command) => commands.push(command);
+        let prevented = 0;
+        let stopped = 0;
+
+        state.mathField.dispatch('keydown', {
+            code: 'Space',
+            ctrlKey: true,
+            preventDefault: () => prevented++,
+            stopImmediatePropagation: () => stopped++,
+        });
+
+        expect(commands).to.deep.equal([['insert', '\\,']]);
+        expect(prevented).to.equal(1);
+        expect(stopped).to.equal(1);
+    });
+
     it('stretches SVG accents across the full base inside MathLive shadow DOM', () => {
         const methods = loadEditorMethods();
         const state: any = {
