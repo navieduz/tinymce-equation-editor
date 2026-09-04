@@ -10,6 +10,7 @@ var app = new Vue({
         mathLiveConfig: {},
         placeholderSelection: null,
         restorePlaceholderOnClick: false,
+        placeholderHighlightObserver: null,
     },
     created() {
         if (window.addEventListener) {
@@ -59,6 +60,8 @@ var app = new Vue({
         },
 
         initEquation() {
+            this.placeholderHighlightObserver?.disconnect();
+            this.placeholderHighlightObserver = null;
             this.mathField = new MathfieldElement();
             this.placeholderSelection = null;
             this.restorePlaceholderOnClick = false;
@@ -69,6 +72,48 @@ var app = new Vue({
                 this.latex = this.mathField.getValue();
                 this.sendLatex();
             });
+
+            this.mathField.addEventListener(
+                'keydown',
+                (event) => {
+                    if (
+                        (event.key !== 'ArrowRight' &&
+                            event.key !== 'ArrowLeft') ||
+                        event.shiftKey ||
+                        event.altKey ||
+                        event.ctrlKey ||
+                        event.metaKey
+                    ) {
+                        return;
+                    }
+
+                    const placeholder = this.placeholderSelection?.ranges?.[0];
+                    const current = this.mathField.selection?.ranges?.[0];
+                    if (
+                        !placeholder ||
+                        !current ||
+                        current[0] !== current[1]
+                    ) {
+                        return;
+                    }
+
+                    const returnsToPlaceholder =
+                        (event.key === 'ArrowRight' &&
+                            current[0] === placeholder[0] - 1) ||
+                        (event.key === 'ArrowLeft' &&
+                            current[0] === placeholder[1] + 1);
+                    if (!returnsToPlaceholder) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this.mathField.selection = this.placeholderSelection;
+                    this.restorePlaceholderHighlight();
+                    setTimeout(() => this.restorePlaceholderHighlight(), 0);
+                },
+                true
+            );
 
             this.mathField.addEventListener(
                 'pointerdown',
@@ -95,6 +140,8 @@ var app = new Vue({
             this.mathField.addEventListener('click', () => {
                 if (this.restorePlaceholderOnClick) {
                     this.mathField.selection = this.placeholderSelection;
+                    this.restorePlaceholderHighlight();
+                    setTimeout(() => this.restorePlaceholderHighlight(), 0);
                 }
                 this.restorePlaceholderOnClick = false;
             });
@@ -111,10 +158,46 @@ var app = new Vue({
 
             document.getElementById('math-field').appendChild(this.mathField);
 
+            const content = this.mathField.shadowRoot?.querySelector(
+                '[part="content"]'
+            );
+            if (content && typeof MutationObserver !== 'undefined') {
+                this.placeholderHighlightObserver = new MutationObserver(() => {
+                    if (this.placeholderSelection) {
+                        this.restorePlaceholderHighlight();
+                    }
+                });
+                this.placeholderHighlightObserver.observe(content, {
+                    childList: true,
+                    subtree: true,
+                });
+            }
+
             this.mathField.inlineShortcuts = {
                 ...this.mathField.inlineShortcuts,
                 '/': '\\dfrac{#?}{#?}',
             }
+        },
+
+        restorePlaceholderHighlight() {
+            const root = this.mathField.shadowRoot;
+            const content = root?.querySelector('[part="content"]');
+            const selected = root?.querySelector('.ML__selected');
+            if (!content || !selected || root.querySelector('.ML__selection')) {
+                return;
+            }
+
+            const contentRect = content.getBoundingClientRect();
+            const selectedRect = selected.getBoundingClientRect();
+            const selection = document.createElement('div');
+            selection.className = 'ML__selection';
+            selection.style.position = 'absolute';
+            selection.style.left = selectedRect.left - contentRect.left + 'px';
+            selection.style.top = selectedRect.top - contentRect.top + 'px';
+            selection.style.width = Math.ceil(selectedRect.width) + 'px';
+            selection.style.height =
+                Math.max(1, Math.ceil(selectedRect.height - 1)) + 'px';
+            content.prepend(selection);
         },
 
         insert(button) {
@@ -124,11 +207,16 @@ var app = new Vue({
                     selectionMode: 'placeholder',
                 })
             ) {
-                const selection = this.mathField.selection;
-                this.placeholderSelection =
-                    selection.ranges[0][0] === selection.ranges[0][1]
-                        ? null
-                        : selection;
+                const preservePlaceholderSelection = () => {
+                    const selection = this.mathField.selection;
+                    this.placeholderSelection =
+                        selection.ranges[0][0] === selection.ranges[0][1]
+                            ? null
+                            : selection;
+                    this.restorePlaceholderHighlight();
+                };
+                preservePlaceholderSelection();
+                setTimeout(preservePlaceholderSelection, 0);
             }
         },
 
